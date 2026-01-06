@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v9.2 穩定出版版</title>
+    <title>𓃥 白六日報 - v9.3 終極穩定版</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
 
@@ -24,35 +24,34 @@
             align-items: center;
         }
 
-        /* 編輯面板 - 永遠存在但 publish 後被推到後方 */
+        /* 頂部編輯台 */
         #editor-deck {
             position: sticky;
             top: 0;
-            z-index: 2000;
+            z-index: 9999;
             background: #333;
             width: 100%;
             padding: 15px 0;
             color: white;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
 
         .edit-viewport {
             width: 140px; 
             height: 180px;
             margin: 10px auto;
-            border: 2px solid white;
+            border: 2px solid #fff;
             position: relative;
             overflow: hidden;
             background: #000;
             touch-action: none;
         }
 
-        /* 關鍵：兩張圖共用 class 確保行為一致 */
         .sync-img { 
             position: absolute; 
             top: 0; left: 0; 
-            transform-origin: 0 0; 
+            transform-origin: 0 0;
             display: block;
         }
 
@@ -67,10 +66,10 @@
             border-radius: 4px;
         }
 
-        /* 報紙展示區 */
+        /* 報紙內容區 */
         #newspaper-output {
-            display: none;
-            padding: 40px 10px;
+            display: none; /* 初始隱藏 */
+            padding: 30px 0;
             width: 100%;
             justify-content: center;
         }
@@ -79,10 +78,11 @@
             width: 90%;
             max-width: 450px;
             background-color: var(--paper-color);
-            padding: 30px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             color: var(--ink-color);
-            background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
+            transform: rotate(-0.5deg);
         }
 
         header {
@@ -95,46 +95,30 @@
         .newspaper-title {
             font-size: 2.8rem;
             font-weight: 900;
-            margin: 5px 0;
             letter-spacing: 12px;
+            margin: 5px 0;
         }
 
         .meta-info {
             display: flex;
             justify-content: space-between;
-            padding: 5px 10px;
             font-size: 0.75rem;
             font-weight: bold;
             border-top: 1px solid var(--border-color);
+            padding: 5px;
         }
 
         .content-grid {
             display: flex;
             gap: 15px;
-            min-height: 380px;
         }
 
         .vertical-text-col {
             writing-mode: vertical-rl;
             border-left: 1px solid var(--border-color);
-            padding-left: 15px;
-            line-height: 2.1;
-            text-align: justify;
+            padding-left: 12px;
+            line-height: 2.2;
             flex-grow: 1;
-        }
-
-        .good-morning {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--accent);
-            margin-left: 10px;
-        }
-
-        .right-sidebar {
-            width: 140px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
         }
 
         .photo-frame {
@@ -144,19 +128,14 @@
             overflow: hidden;
             position: relative;
             background: #fff;
-            margin-bottom: 15px;
-        }
-
-        /* 報紙照片濾鏡 */
-        #final-img {
             filter: grayscale(1) contrast(1.1) sepia(0.2);
         }
 
         .weather-report {
             border-top: 1px solid var(--border-color);
+            margin-top: 10px;
             padding-top: 10px;
             font-size: 0.7rem;
-            line-height: 1.6;
         }
     </style>
 </head>
@@ -172,7 +151,7 @@
             <div class="edit-viewport" id="viewport">
                 <img id="raw-img" class="sync-img" src="">
             </div>
-            <input type="range" id="zoom" min="0.01" max="2" step="0.01">
+            <input type="range" id="zoom" min="0.1" max="3" step="0.01">
             <div style="margin-top:10px;">
                 <button class="btn" onclick="publish()" style="background:#2a5a2a;">「 確 認 出 版 」</button>
             </div>
@@ -182,7 +161,7 @@
     <div id="newspaper-output">
         <article class="newspaper-module">
             <header>
-                <div style="font-size: 0.7rem; display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <div style="font-size:0.7rem; display:flex; justify-content:space-between;">
                     <span>歲次乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
@@ -196,31 +175,25 @@
 
             <div class="content-grid">
                 <section class="vertical-text-col">
-                    <span class="good-morning">早安平安</span>
-                    <span id="display-quote" style="font-size: 1.1rem; font-weight: 700; letter-spacing: 2px;"></span>
+                    <span style="font-size:1.8rem; font-weight:900; color:var(--accent);">早安平安</span>
+                    <span id="display-quote" style="font-size:1.1rem; font-weight:700;"></span>
                     <br>
-                    <span style="font-size: 0.75rem; color:#555;">
-                        【本報快訊】強烈冷氣團來襲，氣象局發布低溫橙色特報。北投清晨測得 8.9 度低溫。
-                        花蓮海域搜救任務仍積極進行中。台股今日氣勢如虹，AI類股領漲。
+                    <span style="font-size:0.75rem; color:#444;">
+                        【本報快訊】強烈冷氣團發威，全台橙色低溫特報。北投清晨測得 8.9 度。
+                        國防部持續搜尋花蓮失聯機件。台股今日氣勢如虹，AI 類股強勢。
                     </span>
                 </section>
 
-                <aside class="right-sidebar">
+                <aside style="width:140px; flex-shrink:0;">
                     <div class="photo-frame">
                         <img id="final-img" class="sync-img" src="">
                     </div>
                     <div class="weather-report">
                         <strong>【各縣市氣象】</strong><br>
-                        台北 9° | 台中 11°<br>
-                        高雄 14° | 宜蘭 10°<br>
-                        花蓮 14° | 澎湖 15°
+                        台北 9° | 台中 11°<br>高雄 14° | 宜蘭 10°
                     </div>
                 </aside>
             </div>
-            
-            <footer style="margin-top:20px; text-align:center; font-size:0.5rem; border-top:1px solid var(--border-color); padding-top:10px; opacity:0.5;">
-                𓃥 白六日報館 · 靜思語每日輪換
-            </footer>
         </article>
     </div>
 
@@ -230,12 +203,8 @@
         const finalImg = document.getElementById('final-img');
         const zoom = document.getElementById('zoom');
         const viewport = document.getElementById('viewport');
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const editorDeck = document.getElementById('editor-deck');
-        const newspaperOutput = document.getElementById('newspaper-output');
 
-        const jingsiQuotes = [
+        const quotes = [
             "「口說好話，心想好意，身行好事。」",
             "「原諒別人，就是善待自己。」",
             "「心美，看什麼都順眼。」",
@@ -245,7 +214,7 @@
             "「微笑，是世界上最共通的語言。」"
         ];
 
-        let x = 0, y = 0, scale = 0.5;
+        let posX = 0, posY = 0, currentScale = 1;
         let isDragging = false, startX, startY;
 
         upload.onchange = (e) => {
@@ -254,19 +223,16 @@
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const dataUrl = ev.target.result;
-                    // 同時賦值給兩張圖片，確保快取一致
                     rawImg.src = dataUrl;
                     finalImg.src = dataUrl;
+                    document.getElementById('step-1').style.display = 'none';
+                    document.getElementById('step-2').style.display = 'block';
+                    document.getElementById('display-quote').innerText = quotes[new Date().getDay()];
                     
-                    step1.style.display = 'none';
-                    step2.style.display = 'block';
-                    
-                    document.getElementById('display-quote').innerText = jingsiQuotes[new Date().getDay() % 7];
-
                     rawImg.onload = () => {
-                        scale = 140 / rawImg.naturalWidth;
-                        zoom.value = scale;
-                        updateAll();
+                        currentScale = 140 / rawImg.naturalWidth;
+                        zoom.value = currentScale;
+                        sync();
                     };
                 };
                 reader.readAsDataURL(file);
@@ -274,32 +240,44 @@
         };
 
         function publish() {
-            updateAll(); // 出版前最後一次強制同步數值
-            editorDeck.style.display = 'none';
-            newspaperOutput.style.display = 'flex';
-            window.scrollTo(0, 0);
+            sync(); // 確保出版時最後一次同步
+            document.getElementById('editor-deck').style.display = 'none';
+            document.getElementById('newspaper-output').style.display = 'flex';
+            window.scrollTo(0,0);
         }
 
-        // 核心同步函數
-        function updateAll() {
-            const transformStr = `translate(${x}px, ${y}px) scale(${scale})`;
-            rawImg.style.transform = transformStr;
-            finalImg.style.transform = transformStr;
+        function sync() {
+            const transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+            rawImg.style.transform = transform;
+            finalImg.style.transform = transform;
         }
 
-        // 交互控制
-        zoom.oninput = () => { scale = parseFloat(zoom.value); updateAll(); };
-        const startDrag = (ex, ey) => { isDragging = true; startX = ex - x; startY = ey - y; };
-        const moveDrag = (ex, ey) => { if (!isDragging) return; x = ex - startX; y = ey - startY; updateAll(); };
-        const stopDrag = () => { isDragging = false; };
+        // 觸控邏輯
+        const handleStart = (e) => {
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX - posX;
+            startY = clientY - posY;
+        };
 
-        viewport.onmousedown = (e) => startDrag(e.clientX, e.clientY);
-        window.onmousemove = (e) => moveDrag(e.clientX, e.clientY);
-        window.onmouseup = stopDrag;
+        const handleMove = (e) => {
+            if (!isDragging) return;
+            if (e.touches) e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            posX = clientX - startX;
+            posY = clientY - startY;
+            sync();
+        };
 
-        viewport.ontouchstart = (e) => startDrag(e.touches[0].clientX, e.touches[0].clientY);
-        viewport.ontouchmove = (e) => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); };
-        viewport.ontouchend = stopDrag;
+        viewport.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', () => isDragging = false);
+        viewport.addEventListener('touchstart', handleStart);
+        viewport.addEventListener('touchmove', handleMove, { passive: false });
+        viewport.addEventListener('touchend', () => isDragging = false);
+        zoom.oninput = () => { currentScale = parseFloat(zoom.value); sync(); };
     </script>
 </body>
 </html>
