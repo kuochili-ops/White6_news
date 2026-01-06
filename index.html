@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - 號外時報墨香版</title>
+    <title>𓃥 白六日報 - v9.2 穩定出版版</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
 
@@ -24,7 +24,7 @@
             align-items: center;
         }
 
-        /* 固定編輯台 */
+        /* 編輯面板 - 永遠存在但 publish 後被推到後方 */
         #editor-deck {
             position: sticky;
             top: 0;
@@ -38,17 +38,23 @@
         }
 
         .edit-viewport {
-            width: 140px; /* 縮小後的 80% 寬度 */
+            width: 140px; 
             height: 180px;
             margin: 10px auto;
-            border: 2px solid var(--paper-color);
+            border: 2px solid white;
             position: relative;
             overflow: hidden;
             background: #000;
             touch-action: none;
         }
 
-        #raw-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+        /* 關鍵：兩張圖共用 class 確保行為一致 */
+        .sync-img { 
+            position: absolute; 
+            top: 0; left: 0; 
+            transform-origin: 0 0; 
+            display: block;
+        }
 
         .btn {
             background: var(--accent);
@@ -61,12 +67,11 @@
             border-radius: 4px;
         }
 
-        /* 報紙主體 (沿用你提供的樣式) */
+        /* 報紙展示區 */
         #newspaper-output {
             display: none;
             padding: 40px 10px;
             width: 100%;
-            display: flex;
             justify-content: center;
         }
 
@@ -75,12 +80,9 @@
             max-width: 450px;
             background-color: var(--paper-color);
             padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.1);
-            position: relative;
-            transform: rotate(-1deg);
-            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0,0,0,0.6);
             color: var(--ink-color);
-            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
         }
 
         header {
@@ -91,11 +93,10 @@
         }
 
         .newspaper-title {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 900;
-            margin: 0;
-            letter-spacing: 10px;
-            border-bottom: 2px solid var(--border-color);
+            margin: 5px 0;
+            letter-spacing: 12px;
         }
 
         .meta-info {
@@ -104,20 +105,20 @@
             padding: 5px 10px;
             font-size: 0.75rem;
             font-weight: bold;
+            border-top: 1px solid var(--border-color);
         }
 
-        /* 內容布局：直書區與照片區 */
         .content-grid {
             display: flex;
-            gap: 20px;
-            min-height: 350px;
+            gap: 15px;
+            min-height: 380px;
         }
 
         .vertical-text-col {
             writing-mode: vertical-rl;
             border-left: 1px solid var(--border-color);
             padding-left: 15px;
-            line-height: 2;
+            line-height: 2.1;
             text-align: justify;
             flex-grow: 1;
         }
@@ -129,13 +130,6 @@
             margin-left: 10px;
         }
 
-        .master-quote {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-
-        /* 照片區域 */
         .right-sidebar {
             width: 140px;
             flex-shrink: 0;
@@ -153,10 +147,8 @@
             margin-bottom: 15px;
         }
 
+        /* 報紙照片濾鏡 */
         #final-img {
-            position: absolute;
-            top: 0; left: 0;
-            transform-origin: 0 0;
             filter: grayscale(1) contrast(1.1) sepia(0.2);
         }
 
@@ -164,10 +156,8 @@
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
             font-size: 0.7rem;
-            line-height: 1.5;
+            line-height: 1.6;
         }
-
-        @media print { #editor-deck { display: none; } #newspaper-output { display: flex; } }
     </style>
 </head>
 <body>
@@ -180,7 +170,7 @@
         
         <div id="step-2" style="display:none;">
             <div class="edit-viewport" id="viewport">
-                <img id="raw-img" src="">
+                <img id="raw-img" class="sync-img" src="">
             </div>
             <input type="range" id="zoom" min="0.01" max="2" step="0.01">
             <div style="margin-top:10px;">
@@ -192,32 +182,32 @@
     <div id="newspaper-output">
         <article class="newspaper-module">
             <header>
-                <div class="meta-info">
+                <div style="font-size: 0.7rem; display: flex; justify-content: space-between; margin-bottom: 5px;">
                     <span>歲次乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
                 <h1 class="newspaper-title">白六號外</h1>
-                <div class="meta-info" style="border-top: 2px solid var(--border-color); margin-top:5px;">
+                <div class="meta-info">
                     <span>零售：肆圓</span>
+                    <span>北投特刊</span>
                     <span>今日要聞</span>
-                    <span>北投區特刊</span>
                 </div>
             </header>
 
             <div class="content-grid">
                 <section class="vertical-text-col">
                     <span class="good-morning">早安平安</span>
-                    <span class="master-quote" id="display-quote">「口說好話，心想好意，身行好事。」</span>
+                    <span id="display-quote" style="font-size: 1.1rem; font-weight: 700; letter-spacing: 2px;"></span>
                     <br>
-                    <span style="font-size: 0.75rem; color:#444;">
-                        【本報訊】強烈冷氣團發威，氣象局發布低溫橙色特報。北投清晨最低溫僅八點九度。
-                        國人集氣祈福花蓮搜救任務。台股今日氣勢如虹，AI類股領漲。
+                    <span style="font-size: 0.75rem; color:#555;">
+                        【本報快訊】強烈冷氣團來襲，氣象局發布低溫橙色特報。北投清晨測得 8.9 度低溫。
+                        花蓮海域搜救任務仍積極進行中。台股今日氣勢如虹，AI類股領漲。
                     </span>
                 </section>
 
                 <aside class="right-sidebar">
                     <div class="photo-frame">
-                        <img id="final-img" src="">
+                        <img id="final-img" class="sync-img" src="">
                     </div>
                     <div class="weather-report">
                         <strong>【各縣市氣象】</strong><br>
@@ -228,8 +218,8 @@
                 </aside>
             </div>
             
-            <footer style="margin-top:20px; text-align:center; font-size:0.55rem; border-top:1px solid var(--border-color); padding-top:10px; opacity:0.6;">
-                𓃥 白六日報館 · 證嚴法師靜思語輪播系統
+            <footer style="margin-top:20px; text-align:center; font-size:0.5rem; border-top:1px solid var(--border-color); padding-top:10px; opacity:0.5;">
+                𓃥 白六日報館 · 靜思語每日輪換
             </footer>
         </article>
     </div>
@@ -263,19 +253,20 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    const url = ev.target.result;
-                    rawImg.src = url;
-                    finalImg.src = url;
+                    const dataUrl = ev.target.result;
+                    // 同時賦值給兩張圖片，確保快取一致
+                    rawImg.src = dataUrl;
+                    finalImg.src = dataUrl;
+                    
                     step1.style.display = 'none';
                     step2.style.display = 'block';
                     
-                    // 隨機靜思語
-                    document.getElementById('display-quote').innerText = jingsiQuotes[new Date().getDay() % jingsiQuotes.length];
+                    document.getElementById('display-quote').innerText = jingsiQuotes[new Date().getDay() % 7];
 
                     rawImg.onload = () => {
                         scale = 140 / rawImg.naturalWidth;
                         zoom.value = scale;
-                        update();
+                        updateAll();
                     };
                 };
                 reader.readAsDataURL(file);
@@ -283,25 +274,23 @@
         };
 
         function publish() {
-            const transform = `translate(${x}px, ${y}px) scale(${scale})`;
-            finalImg.style.transform = transform;
-            
-            // 隱藏編輯台並顯示報紙
+            updateAll(); // 出版前最後一次強制同步數值
             editorDeck.style.display = 'none';
             newspaperOutput.style.display = 'flex';
-            
-            // 強制渲染
-            requestAnimationFrame(() => {
-                finalImg.style.transform = transform;
-            });
             window.scrollTo(0, 0);
         }
 
-        // 單指移位與縮放
-        zoom.oninput = () => { scale = parseFloat(zoom.value); update(); };
+        // 核心同步函數
+        function updateAll() {
+            const transformStr = `translate(${x}px, ${y}px) scale(${scale})`;
+            rawImg.style.transform = transformStr;
+            finalImg.style.transform = transformStr;
+        }
 
+        // 交互控制
+        zoom.oninput = () => { scale = parseFloat(zoom.value); updateAll(); };
         const startDrag = (ex, ey) => { isDragging = true; startX = ex - x; startY = ey - y; };
-        const moveDrag = (ex, ey) => { if (!isDragging) return; x = ex - startX; y = ey - startY; update(); };
+        const moveDrag = (ex, ey) => { if (!isDragging) return; x = ex - startX; y = ey - startY; updateAll(); };
         const stopDrag = () => { isDragging = false; };
 
         viewport.onmousedown = (e) => startDrag(e.clientX, e.clientY);
@@ -311,12 +300,6 @@
         viewport.ontouchstart = (e) => startDrag(e.touches[0].clientX, e.touches[0].clientY);
         viewport.ontouchmove = (e) => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); };
         viewport.ontouchend = stopDrag;
-
-        function update() {
-            const transform = `translate(${x}px, ${y}px) scale(${scale})`;
-            rawImg.style.transform = transform;
-            finalImg.style.transform = transform;
-        }
     </script>
 </body>
 </html>
