@@ -3,44 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - 古硯珍藏版 v8.0</title>
+    <title>𓃥 白六日報 - 號外時報墨香版</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
 
         :root {
-            --paper: #e8dfc4;
-            --ink: #2a2a2a;
+            --paper-color: #e8dcc4;
+            --ink-color: #2c2c2c;
+            --border-color: #4a4a4a;
             --accent: #7d2a2a;
         }
 
         body {
-            background-color: #1a1a1a;
+            background-color: #222;
             margin: 0;
             padding: 0;
-            font-family: "標楷體", "Noto Serif TC", serif;
+            font-family: 'Noto Serif TC', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* 編輯台面板 - 固定在頂部 */
+        /* 固定編輯台 */
         #editor-deck {
-            background: #333;
-            width: 100%;
-            padding: 20px 0;
-            color: #ddd;
-            text-align: center;
-            border-bottom: 2px solid #444;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 2000;
+            background: #333;
+            width: 100%;
+            padding: 15px 0;
+            color: white;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .edit-viewport {
-            width: 140px; /* 縮小後的寬度預覽 */
-            height: 200px;
+            width: 140px; /* 縮小後的 80% 寬度 */
+            height: 180px;
             margin: 10px auto;
-            border: 2px solid var(--paper);
+            border: 2px solid var(--paper-color);
             position: relative;
             overflow: hidden;
             background: #000;
@@ -53,112 +54,120 @@
             background: var(--accent);
             color: #f0e6d2;
             padding: 10px 20px;
-            border: 1px solid #5a1a1a;
+            border: none;
             cursor: pointer;
             font-weight: bold;
             margin: 5px;
             border-radius: 4px;
         }
 
-        /* 報紙輸出區 */
+        /* 報紙主體 (沿用你提供的樣式) */
         #newspaper-output {
             display: none;
-            padding: 30px 10px;
-            animation: fadeIn 1s ease-in;
+            padding: 40px 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        #newspaper {
-            background-color: var(--paper);
-            width: 360px;
-            padding: 25px;
-            border: 1px solid #d3c4a8;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            background-image: url('https://www.transparenttextures.com/patterns/old-map.png');
-            color: var(--ink);
+        .newspaper-module {
+            width: 90%;
+            max-width: 450px;
+            background-color: var(--paper-color);
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.1);
+            position: relative;
+            transform: rotate(-1deg);
+            overflow: hidden;
+            color: var(--ink-color);
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
         }
 
         header {
-            text-align: center;
-            border: 2px solid var(--ink);
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-
-        .masthead {
-            font-size: 2.2rem;
-            letter-spacing: 15px;
-            margin: 10px 0;
-            font-weight: 900;
-            border-bottom: 1px solid var(--ink);
+            border-bottom: 5px double var(--border-color);
             padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .sub-header {
+        .newspaper-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .meta-info {
             display: flex;
             justify-content: space-between;
-            font-size: 0.7rem;
+            padding: 5px 10px;
+            font-size: 0.75rem;
             font-weight: bold;
         }
 
-        /* 內容佈局 */
-        .article-body {
+        /* 內容布局：直書區與照片區 */
+        .content-grid {
             display: flex;
-            gap: 15px;
-            min-height: 380px;
+            gap: 20px;
+            min-height: 350px;
         }
 
-        /* 左側：直書語錄 */
         .vertical-text-col {
             writing-mode: vertical-rl;
-            border-left: 1px solid #aaa;
-            padding-left: 12px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 15px;
             line-height: 2;
             text-align: justify;
+            flex-grow: 1;
         }
 
-        .good-morning-title {
+        .good-morning {
             font-size: 1.8rem;
             font-weight: 900;
             color: var(--accent);
-            margin-left: 5px;
+            margin-left: 10px;
         }
 
-        .quote-v { font-size: 0.95rem; letter-spacing: 2px; font-weight: bold; }
+        .master-quote {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
 
-        /* 右側：照片與天氣 (縮小版) */
-        .right-content {
+        /* 照片區域 */
+        .right-sidebar {
+            width: 140px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            width: 140px; /* 縮小 20% 後的尺寸 */
-            flex-shrink: 0;
         }
 
         .photo-frame {
             width: 140px;
-            height: 200px;
-            border: 1px solid var(--ink);
+            height: 180px;
+            border: 1px solid var(--ink-color);
             overflow: hidden;
             position: relative;
             background: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        #final-img { 
-            position: absolute; 
-            filter: grayscale(1) contrast(1.1) sepia(0.2); 
-            display: block !important; /* 確保顯示 */
+        #final-img {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0;
+            filter: grayscale(1) contrast(1.1) sepia(0.2);
         }
 
-        .weather-v {
-            border-top: 1px double var(--ink);
-            padding-top: 8px;
-            font-size: 0.65rem;
-            line-height: 1.4;
+        .weather-report {
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            font-size: 0.7rem;
+            line-height: 1.5;
         }
 
-        @media print { #editor-deck { display: none; } }
+        @media print { #editor-deck { display: none; } #newspaper-output { display: flex; } }
     </style>
 </head>
 <body>
@@ -181,50 +190,48 @@
     </div>
 
     <div id="newspaper-output">
-        <div id="newspaper">
+        <article class="newspaper-module">
             <header>
-                <div class="sub-header">
+                <div class="meta-info">
                     <span>歲次乙巳年 十一月十九</span>
-                    <span>每份零售 肆元</span>
-                </div>
-                <h1 class="masthead">白六日報</h1>
-                <div class="sub-header">
                     <span>二〇二六年一月七日</span>
-                    <span>今日號外</span>
+                </div>
+                <h1 class="newspaper-title">白六號外</h1>
+                <div class="meta-info" style="border-top: 2px solid var(--border-color); margin-top:5px;">
+                    <span>零售：肆圓</span>
+                    <span>今日要聞</span>
+                    <span>北投區特刊</span>
                 </div>
             </header>
 
-            <div class="article-body">
-                <div class="vertical-text-col">
-                    <span class="good-morning-title">早安平安</span>
-                    <span class="quote-v" id="master-quote">「口說好話，心想好意，身行好事。」</span>
+            <div class="content-grid">
+                <section class="vertical-text-col">
+                    <span class="good-morning">早安平安</span>
+                    <span class="master-quote" id="display-quote">「口說好話，心想好意，身行好事。」</span>
                     <br>
-                    <span style="font-size: 0.7rem; color:#444;">
-                        【本報快訊】強烈冷氣團發威，全台橙色燈號。北投清晨低溫九度。花蓮海域搜救任務持續，國人集氣祈福。
+                    <span style="font-size: 0.75rem; color:#444;">
+                        【本報訊】強烈冷氣團發威，氣象局發布低溫橙色特報。北投清晨最低溫僅八點九度。
+                        國人集氣祈福花蓮搜救任務。台股今日氣勢如虹，AI類股領漲。
                     </span>
-                </div>
+                </section>
 
-                <div class="right-content">
+                <aside class="right-sidebar">
                     <div class="photo-frame">
                         <img id="final-img" src="">
                     </div>
-                    <div class="weather-v">
-                        <strong>全台氣象概覽：</strong><br>
-                        台北 九度 | 台中 十一度<br>
-                        高雄 十四度 | 宜蘭 十度<br>
-                        花蓮 十四度 | 澎湖 十五度
+                    <div class="weather-report">
+                        <strong>【各縣市氣象】</strong><br>
+                        台北 9° | 台中 11°<br>
+                        高雄 14° | 宜蘭 10°<br>
+                        花蓮 14° | 澎湖 15°
                     </div>
-                </div>
+                </aside>
             </div>
-
-            <footer style="margin-top:15px; text-align:center; font-size:0.5rem; border-top:1px solid var(--ink); padding-top:8px;">
-                𓃥 白六日報館 · 證嚴法師靜思語選錄
+            
+            <footer style="margin-top:20px; text-align:center; font-size:0.55rem; border-top:1px solid var(--border-color); padding-top:10px; opacity:0.6;">
+                𓃥 白六日報館 · 證嚴法師靜思語輪播系統
             </footer>
-        </div>
-        <div style="text-align:center; margin-top:20px;">
-            <button class="btn" onclick="window.print()">保存圖檔</button>
-            <button class="btn" onclick="location.reload()" style="background:#444">重新編排</button>
-        </div>
+        </article>
     </div>
 
     <script>
@@ -238,14 +245,13 @@
         const editorDeck = document.getElementById('editor-deck');
         const newspaperOutput = document.getElementById('newspaper-output');
 
-        // 證嚴法師靜思語輪換
         const jingsiQuotes = [
             "「口說好話，心想好意，身行好事。」",
             "「原諒別人，就是善待自己。」",
             "「心美，看什麼都順眼。」",
             "「甘願做，歡喜受。」",
             "「要用心，不要操心、煩心。」",
-            "「太陽光大，父母恩大，君子量大，小人氣大。」",
+            "「太陽光大，父母恩大，君子量大。」",
             "「微笑，是世界上最共通的語言。」"
         ];
 
@@ -257,32 +263,41 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    rawImg.src = ev.target.result;
-                    finalImg.src = ev.target.result; // 同時賦予報紙上的圖片源
+                    const url = ev.target.result;
+                    rawImg.src = url;
+                    finalImg.src = url;
                     step1.style.display = 'none';
                     step2.style.display = 'block';
                     
-                    // 自動設置隨機靜思語
-                    document.getElementById('master-quote').innerText = jingsiQuotes[new Date().getDay() % jingsiQuotes.length];
+                    // 隨機靜思語
+                    document.getElementById('display-quote').innerText = jingsiQuotes[new Date().getDay() % jingsiQuotes.length];
 
-                    setTimeout(() => {
+                    rawImg.onload = () => {
                         scale = 140 / rawImg.naturalWidth;
                         zoom.value = scale;
                         update();
-                    }, 100);
+                    };
                 };
                 reader.readAsDataURL(file);
             }
         };
 
         function publish() {
-            // 關鍵：將編輯台的變換數值完全同步到報紙圖片
-            finalImg.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+            const transform = `translate(${x}px, ${y}px) scale(${scale})`;
+            finalImg.style.transform = transform;
+            
+            // 隱藏編輯台並顯示報紙
             editorDeck.style.display = 'none';
-            newspaperOutput.style.display = 'block';
-            window.scrollTo(0,0);
+            newspaperOutput.style.display = 'flex';
+            
+            // 強制渲染
+            requestAnimationFrame(() => {
+                finalImg.style.transform = transform;
+            });
+            window.scrollTo(0, 0);
         }
 
+        // 單指移位與縮放
         zoom.oninput = () => { scale = parseFloat(zoom.value); update(); };
 
         const startDrag = (ex, ey) => { isDragging = true; startX = ex - x; startY = ey - y; };
@@ -300,7 +315,6 @@
         function update() {
             const transform = `translate(${x}px, ${y}px) scale(${scale})`;
             rawImg.style.transform = transform;
-            // 實時同步預覽，確保確認出版時數值正確
             finalImg.style.transform = transform;
         }
     </script>
