@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v19.5</title>
+    <title>𓃥 白六日報 - v20.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -32,7 +32,9 @@
         
         .quote-box { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin: 12px 0; padding: 12px; border: 1px dashed var(--ink); background: rgba(255,255,255,0.1); line-height: 1.6; }
 
-        .photo-box { width: 140px; height: 140px; border: 1.2px solid var(--ink); overflow: hidden; position: relative; background: #c9bfab; margin: 0 auto; touch-action: none; }
+        /* 照片與圖說的父容器，刊印時會整塊拍下來 */
+        #photo-composite-zone { padding: 5px; background: rgba(255,255,255,0.2); border: 1px solid rgba(0,0,0,0.1); }
+        .photo-box { width: 130px; height: 130px; border: 1.2px solid var(--ink); overflow: hidden; position: relative; background: #c9bfab; margin: 0 auto; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
 
         .news-item { font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
@@ -44,6 +46,8 @@
         .ad-box span { letter-spacing: 2px; }
 
         body.reader-mode #admin-panel { display: none; }
+        /* 讀者模式下隱藏原本的文字框，因為文字已經合在圖裡了 */
+        body.reader-mode #out-cap { display: none; }
     </style>
 </head>
 <body>
@@ -87,8 +91,12 @@
                     
                     <div class="quote-box" id="daily-quote">...</div>
                     
-                    <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src="" crossorigin="anonymous"></div>
-                    <div id="out-cap" style="font-size:0.75rem; text-align:center; font-weight:bold; margin-top:8px; border:1px solid #999; padding:5px;">今日影像紀錄</div>
+                    <div id="photo-composite-zone">
+                        <div class="photo-box" id="p-box">
+                            <img id="final-img" class="sync-img" src="" crossorigin="anonymous">
+                        </div>
+                        <div id="out-cap" style="font-size:0.7rem; text-align:center; font-weight:bold; margin-top:8px; border:1px solid #999; padding:5px; background:white;">今日影像紀錄</div>
+                    </div>
                     
                     <div class="greet" id="dynamic-greet">舒心·平安</div>
                     <div class="ad-box"><span>◆ 效果宏大 ◆</span></div>
@@ -126,15 +134,20 @@
             document.getElementById('daily-quote').innerText = "「願你眼裡有光，活成自己喜歡的模樣。」";
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
             
-            // 讀者模式邏輯：強制載入 GitHub 上的合成圖
             if (new URLSearchParams(window.location.search).get('view') === 'reader') {
                 document.body.classList.add('reader-mode');
                 const githubImgUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/main/${GH.path}?t=${new Date().getTime()}`;
                 const img = document.getElementById('final-img');
                 img.src = githubImgUrl;
                 img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.transform = "translate(-50%, -50%) scale(1)"; // 讀者端不再需要 transform，因為上傳時已合成
+                img.style.height = "auto";
+                img.style.transform = "none";
+                img.style.position = "static";
+                // 讀者端直接把這張「圖+文」的合照放進去
+                const pBox = document.getElementById('p-box');
+                pBox.style.height = "auto";
+                pBox.style.border = "none";
+                document.getElementById('photo-composite-zone').style.background = "transparent";
             }
 
             navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
@@ -161,7 +174,6 @@
             } catch(e) {}
         }
 
-        // 照片編輯邏輯
         let state = { x: 0, y: 0, s: 1, lastDist: 0 };
         let touches = {};
         const pBox = document.getElementById('p-box'), finalImg = document.getElementById('final-img');
@@ -188,10 +200,11 @@
         };
 
         async function uploadToGithub() {
-            const btn = document.getElementById('pub-btn'); btn.innerText = "⏳ 合成中...";
+            const btn = document.getElementById('pub-btn'); btn.innerText = "⏳ 刊印中...";
             try {
-                // 重點：利用 html2canvas 將整個照片容器「拍下來」變成一張圖，這樣位移和縮放就被固定住了
-                const canvas = await html2canvas(pBox, { useCORS: true, backgroundColor: null, scale: 2 });
+                // 重點修正：改為拍照「#photo-composite-zone」，這包含照片和下方的文字框
+                const compositeZone = document.getElementById('photo-composite-zone');
+                const canvas = await html2canvas(compositeZone, { useCORS: true, backgroundColor: '#dbd0bc', scale: 2 });
                 const b64 = canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
                 
                 const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
@@ -201,9 +214,9 @@
                 await fetch(url, { 
                     method: "PUT", 
                     headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ message: "Update Composite Photo", content: b64, sha }) 
+                    body: JSON.stringify({ message: "Update Composite Photo and Caption", content: b64, sha }) 
                 });
-                alert("✅ 刊印成功！收訊者將看到您調整好的畫面。");
+                alert("✅ 刊印成功！圖說與照片已同步更新。");
             } catch (err) {
                 alert("❌ 刊印失敗：" + err.message);
             }
@@ -214,7 +227,7 @@
         function copyAppUrl() {
             const url = window.location.href.split('?')[0] + "?view=reader";
             const d = document.createElement("input"); document.body.appendChild(d); d.value = url; d.select(); document.execCommand("copy"); document.body.removeChild(d);
-            alert("✅ 讀者連結已複製！");
+            alert("✅ 連結已複製！");
         }
         async function downloadNewspaper() {
             const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2 });
