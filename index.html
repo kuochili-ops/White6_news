@@ -3,125 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v14.4</title>
+    <title>𓃥 白六日報 - v14.5</title>
     <style>
-        /* 啟動時最輕量化的 CSS */
-        body { background: #1a1a1a; color: white; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        /* 啟動樣式：極簡，確保不卡頓 */
+        body { background: #1a1a1a; color: white; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
         
-        #init-screen { 
-            width: 90%; max-width: 400px; margin-top: 100px; padding: 30px; 
-            border: 4px solid #f39c12; border-radius: 20px; text-align: center; background: #222;
+        #launcher { 
+            width: 85%; max-width: 400px; padding: 40px 20px; 
+            border: 4px solid #f39c12; border-radius: 25px; text-align: center; background: #222; 
         }
         
-        /* 這是唯一的點擊目標，保證不卡 */
-        .launch-btn { 
-            width: 100%; height: 80px; background: white; color: black; 
-            font-size: 1.5rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer;
+        /* 唯一的點擊目標：原生外觀，權限最高 */
+        .big-launch-btn { 
+            width: 100%; height: 90px; background: white; color: black; 
+            font-size: 1.4rem; font-weight: bold; border-radius: 15px; border: none; cursor: pointer;
         }
 
-        #app-content { display: none; width: 100%; max-width: 440px; padding: 15px; box-sizing: border-box; }
+        /* 預設隱藏所有複雜區域 */
+        #main-app { display: none; width: 100%; max-width: 440px; padding: 10px; }
+        .edit-box { background: #333; padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
         .viewport { width: 180px; height: 180px; border: 2px solid #fff; margin: 10px auto; overflow: hidden; position: relative; background: #000; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; }
         
-        /* 報紙區域樣式 */
-        .paper-wrap { background: #dbd0bc; color: #2a2825; padding: 25px; margin-top: 20px; font-family: 'serif'; }
-        .newspaper-title { font-size: 3rem; font-weight: 900; text-align: center; border-bottom: 3px solid #000; margin: 0 0 15px 0; }
-        .btn-pub { background: #27ae60; color: white; padding: 18px; width: 100%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin: 20px 0; }
+        /* 報紙區域 */
+        .paper-content { background: #dbd0bc; color: #2a2825; padding: 25px; font-family: 'serif'; }
+        .btn-pub { background: #27ae60; color: white; padding: 18px; width: 100%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="init-screen">
-        <h2 style="color:#f39c12;">𓃥 白六日報系統</h2>
-        <p>點擊下方啟動編輯器</p>
-        <input type="file" id="start-upload" accept="image/*" class="launch-btn">
+    <div id="launcher">
+        <h2 style="color:#f39c12; margin-top:0;">𓃥 白六日報</h2>
+        <p style="font-size: 0.9rem; color: #ccc;">請點擊白色區塊選取今日照片</p>
+        <input type="file" id="init-input" accept="image/*" class="big-launch-btn">
     </div>
 
-    <div id="app-content">
-        <div style="background:#333; padding:15px; border-radius:15px; text-align:center;">
-            <b>🎨 編輯今日影像</b>
+    <div id="main-app">
+        <div class="edit-box">
+            <b>🎨 調整影像與底稿連動</b>
             <div class="viewport" id="v-frame">
-                <img id="edit-img" class="sync-img" src="">
+                <img id="img-edit" class="sync-img" src="">
             </div>
-            <input type="range" id="zoom-ctrl" min="0.1" max="4" step="0.01" value="1" style="width: 80%;">
-            <input type="text" id="cap-input" placeholder="輸入圖說..." style="width:100%; padding:10px; margin-top:10px; box-sizing:border-box;" oninput="document.getElementById('p-cap').innerText=this.value||'今日影像'">
-            <button class="btn-pub" onclick="finalizeAndUpload()" id="pub-btn">確定刊印發布</button>
+            <input type="range" id="zoom-ctrl" min="0.1" max="4" step="0.01" value="1" style="width: 85%;">
+            <input type="text" id="cap-input" placeholder="輸入圖說..." style="width:100%; padding:12px; margin-top:10px; box-sizing:border-box;">
+            <button class="btn-pub" onclick="startPublish()" id="pub-btn">確定刊印發布</button>
         </div>
 
-        <div class="paper-wrap" id="capture-area">
-            <h1 class="newspaper-title">白六日報</h1>
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1; font-size:0.9rem; border-right:1px solid #000; padding-right:10px;" id="news-list">新聞載入中...</div>
+        <div class="paper-content" id="capture-area">
+            <h1 style="text-align:center; font-size:3rem; margin:0; border-bottom:4px solid #000;">白六日報</h1>
+            <div style="display:flex; margin-top:15px; gap:10px;">
+                <div style="flex:1; font-size:0.85rem; border-right:1.5px solid #000; padding-right:10px;" id="news-feed">新聞載入中...</div>
                 <div style="width:160px;">
                     <div style="width:100%; height:160px; border:1px solid #000; overflow:hidden; position:relative;">
-                        <img id="paper-img" class="sync-img" src="">
+                        <img id="img-paper" class="sync-img" src="">
                     </div>
-                    <div id="p-cap" style="text-align:center; font-size:0.75rem; font-weight:bold; margin-top:5px;">今日影像</div>
+                    <div id="p-cap-out" style="text-align:center; font-size:0.75rem; font-weight:bold; margin-top:5px;">今日影像</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 延遲載入 heavy 腳本
-        function loadScript(url) {
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = resolve;
-                document.head.appendChild(script);
-            });
-        }
-
         const TK = "ghp_CbTbFJpfe9j2u0ER" + "U80NwlkHv5NJVQ23vKXE";
         const CONF = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
 
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
-        const uploadInput = document.getElementById('start-upload');
-        const editImg = document.getElementById('edit-img');
-        const paperImg = document.getElementById('paper-img');
+        const initInput = document.getElementById('init-input');
+        const imgEdit = document.getElementById('img-edit');
+        const imgPaper = document.getElementById('img-paper');
 
-        // 監聽啟動按鈕
-        uploadInput.onchange = async (e) => {
+        // 啟動邏輯：第一時間只監聽這個
+        initInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = async (ev) => {
-                // 1. 注入圖片
-                editImg.src = paperImg.src = ev.target.result;
-                
-                // 2. 切換介面
-                document.getElementById('init-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
+            reader.onload = (ev) => {
+                // 選好照片，立刻切換 UI
+                imgEdit.src = imgPaper.src = ev.target.result;
+                document.getElementById('launcher').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
 
-                // 3. 選圖後才開始加載新聞與截圖工具 (防止啟動卡頓)
-                await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+                // 進場後才動態載入重量級資源
+                const script = document.createElement('script');
+                script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+                document.head.appendChild(script);
+                
                 fetchNews();
             };
             reader.readAsDataURL(file);
         };
 
-        function fetchNews() {
-            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant')
-            .then(r => r.json()).then(d => {
-                document.getElementById('news-list').innerHTML = d.items.slice(0, 4).map(i => `<p>• ${i.title.split(' - ')[0]}</p>`).join('');
-            });
-        }
-
         function refresh() {
             const t = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
-            editImg.style.transform = paperImg.style.transform = t;
+            imgEdit.style.transform = imgPaper.style.transform = t;
         }
 
         document.getElementById('zoom-ctrl').oninput = (e) => { scale = e.target.value; refresh(); };
-        
+        document.getElementById('cap-input').oninput = (e) => { document.getElementById('p-cap-out').innerText = e.target.value || "今日影像"; };
+
         const vFrame = document.getElementById('v-frame');
         vFrame.ontouchstart = (e) => { isDragging = true; startX = e.touches[0].clientX - posX; startY = e.touches[0].clientY - posY; };
         window.ontouchmove = (e) => { if (!isDragging) return; posX = e.touches[0].clientX - startX; posY = e.touches[0].clientY - startY; refresh(); };
         window.ontouchend = () => isDragging = false;
 
-        async function finalizeAndUpload() {
+        function fetchNews() {
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant')
+            .then(r => r.json()).then(d => {
+                document.getElementById('news-feed').innerHTML = d.items.slice(0, 4).map(i => `<p style="margin:5px 0;">• ${i.title.split(' - ')[0]}</p>`).join('');
+            });
+        }
+
+        async function startPublish() {
             const btn = document.getElementById('pub-btn');
             btn.innerText = "⏳ 刊印中...";
             try {
@@ -136,7 +129,7 @@
                     body: JSON.stringify({ message: "Update", content: b64, sha })
                 });
                 alert("✅ 刊印發布成功！");
-            } catch (e) { alert("發布失敗"); }
+            } catch (e) { alert("發布失敗，請重試"); }
             btn.innerText = "確定刊印發布";
         }
     </script>
