@@ -3,78 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v13.9 絕對觸發版</title>
+    <title>𓃥 白六日報 - v14.0</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
-        :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
-        
-        /* 核心修復：確保這個容器在所有東西的最前方 */
-        #input-safe-zone {
-            position: relative;
-            z-index: 9999; 
-            padding: 20px;
-            background: #333;
-            border: 4px solid #f39c12;
-            margin: 10px;
-            border-radius: 15px;
+        body { 
+            background: #1a1a1a; 
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+
+        /* 初始狀態：只顯示這個大區域 */
+        #init-upload-zone {
+            width: 90%;
+            max-width: 400px;
+            padding: 40px 20px;
+            border: 3px dashed #f39c12;
+            border-radius: 20px;
             text-align: center;
+            background: #222;
         }
 
-        /* 檔案按鈕：強迫症級別的可見度與層級 */
-        .ultimate-input {
-            display: block !important;
-            width: 100% !important;
-            height: 80px !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            background: #fff !important;
-            color: #000 !important;
-            font-size: 20px !important;
-            font-weight: bold !important;
-            border: 2px solid #000 !important;
-            cursor: pointer !important;
+        .big-input {
+            width: 100%;
+            height: 80px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
         }
 
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; }
-        #newspaper-output { width: 100%; display: flex; justify-content: center; padding: 20px 0; }
-        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; color: var(--ink); box-sizing: border-box; }
-        .newspaper-title { font-size: 3.5rem; font-weight: 900; text-align: center; margin: 5px 0; border-bottom: 2px solid var(--ink); }
+        /* 隱藏後續所有內容 */
+        #newspaper-content { display: none; width: 100%; padding: 20px 0; }
         
-        #editor-ui { display: none; padding: 20px; background: #222; margin: 10px; border-radius: 10px; text-align: center; }
+        /* 編輯介面與報紙樣式簡化 */
         .viewport { width: 200px; height: 200px; border: 2px solid #fff; margin: 10px auto; overflow: hidden; position: relative; background: #000; touch-action: none; }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; pointer-events: none; }
-        .btn-pub { background: #27ae60; color: white; padding: 15px; width: 100%; border: none; font-size: 1.2rem; font-weight: 900; border-radius: 10px; margin-top: 15px; }
+        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; }
+        .paper-base { 
+            width: 440px; 
+            background: #dbd0bc; 
+            color: #2a2825; 
+            padding: 25px; 
+            margin: 20px auto;
+            box-sizing: border-box;
+            font-family: 'serif';
+        }
+        .btn-pub { background: #27ae60; color: white; padding: 15px; width: 90%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <div id="input-safe-zone">
-        <label style="color:#f39c12; font-weight:bold; display:block; margin-bottom:10px;">👇 請點擊下方白色區塊選擇照片</label>
-        <input type="file" id="main-upload" accept="image/*" class="ultimate-input">
+    <div id="init-upload-zone">
+        <h2 style="margin:0;">𓃥 白六日報系統</h2>
+        <p style="color: #aaa;">請先選取今日照片以開啟編輯器</p>
+        <input type="file" id="main-upload" accept="image/*" class="big-input">
     </div>
 
-    <div id="editor-ui">
-        <b style="color:#f39c12">已選取照片！請調整構圖：</b>
-        <div class="viewport" id="v-frame">
-            <img id="edit-img" class="sync-img" src="">
+    <div id="newspaper-content">
+        <div style="text-align:center; background:#333; padding:20px; margin:0 10px; border-radius:15px;">
+            <h3>🎨 調整照片位置與大小</h3>
+            <div class="viewport" id="v-frame">
+                <img id="edit-img" class="sync-img" src="">
+            </div>
+            <input type="range" id="zoom-bar" min="0.1" max="4" step="0.01" value="1" style="width: 80%;">
+            <br>
+            <button class="btn-pub" onclick="startPublish()" id="pub-btn">確認並刊印發布</button>
         </div>
-        <div style="margin: 15px 0;">
-            <label>縮放：</label>
-            <input type="range" id="zoom-bar" min="0.1" max="4" step="0.01" value="1" style="width: 70%;">
-        </div>
-        <button class="btn-pub" onclick="startPublish()" id="pub-btn">確定刊印發布</button>
-    </div>
 
-    <div id="newspaper-output">
-        <div id="capture-area">
-            <h1 class="newspaper-title">𓃥 白六日報</h1>
-            <div style="display:flex; gap:15px; margin-top:15px;">
-                <div style="flex:1; font-size:0.9rem; border-right:1px solid #000; padding-right:10px;">新聞載入中...</div>
-                <div style="width:160px;">
+        <div class="paper-base" id="capture-area">
+            <h1 style="text-align:center; font-size:3rem; margin:0; border-bottom:4px solid #2a2825;">白六日報</h1>
+            <div style="display:flex; margin-top:20px;">
+                <div style="flex:1; padding-right:15px; border-right:1px solid #2a2825;">
+                    <p><b>今日頭條：</b> 報紙系統更新 v14.0 穩定版，修復了手機端點擊權限衝突問題...</p>
+                </div>
+                <div style="width:160px; padding-left:15px;">
                     <div style="width:100%; height:160px; border:1px solid #000; overflow:hidden; position:relative;">
                         <img id="paper-img" class="sync-img" src="">
                     </div>
-                    <div style="text-align:center; font-weight:bold; margin-top:5px; font-size:0.8rem;">今日影像</div>
                 </div>
             </div>
         </div>
@@ -89,16 +101,24 @@
         const mainUpload = document.getElementById('main-upload');
         const editImg = document.getElementById('edit-img');
         const paperImg = document.getElementById('paper-img');
+        const initZone = document.getElementById('init-upload-zone');
+        const content = document.getElementById('newspaper-content');
 
-        // 監聽檔案選取
+        // 監聽選取照片
         mainUpload.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = (ev) => {
+                // 1. 注入圖片
                 editImg.src = paperImg.src = ev.target.result;
-                document.getElementById('editor-ui').style.display = 'block';
-                document.getElementById('input-safe-zone').style.display = 'none';
+                
+                // 2. 切換介面：隱藏按鈕區，顯示報紙內容
+                initZone.style.display = 'none';
+                content.style.display = 'block';
+                
+                // 3. 初始化位置
                 scale = 1; posX = 0; posY = 0;
                 refresh();
             };
@@ -133,7 +153,7 @@
                 });
                 if (put.ok) alert("✅ 刊印完成！");
             } catch (e) { alert("發生錯誤"); }
-            btn.innerText = "確定刊印發布";
+            btn.innerText = "確認並刊印發布";
         }
     </script>
 </body>
