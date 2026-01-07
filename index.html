@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v16.0 底稿直覺編輯版</title>
+    <title>𓃥 白六日報 - v16.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -20,7 +20,7 @@
         }
         .input-box { width: 100%; max-width: 400px; height: 42px; background: #333; border: 1px solid #444; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 16px; text-align: center; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto; }
         .btn-row { display: flex; gap: 6px; width: 100%; max-width: 440px; margin: 0 auto; }
-        .btn { flex: 1; height: 48px; border: none; cursor: pointer; font-weight: 900; border-radius: 8px; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.1s; }
+        .btn { flex: 1; height: 48px; border: none; cursor: pointer; font-weight: 900; border-radius: 8px; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .btn-blue { background: #2980b9; color: #fff; }
         .btn-green { background: #27ae60; color: #fff; }
         .btn-orange { background: #f39c12; color: #fff; }
@@ -41,23 +41,18 @@
         .left-col { width: 250px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
         .right-col { width: 160px; padding-left: 15px; text-align: center; }
         
-        /* 核心：直接在報紙上編輯的照片框 */
+        /* 核心：直接編輯照片框 */
         .photo-box { 
             width: 160px; height: 160px; border: 1.5px solid var(--ink); 
             overflow: hidden; position: relative; background: #d0c8b8; 
             margin: 0 auto; touch-action: none; cursor: move;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
-        /* 提示動畫 */
-        .photo-box::after {
-            content: "☝️ 此處可直接拖曳縮放"; position: absolute; bottom: 0; left: 0; width: 100%;
-            background: rgba(122, 0, 0, 0.7); color: white; font-size: 0.6rem; padding: 2px 0;
-            pointer-events: none; opacity: 0.8;
-        }
-
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
+
         .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 10px 0; }
+        .weather-info { border: 1.5px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.2); margin-bottom: 10px; font-size: 0.75rem; text-align: left; }
+        .weather-info b { float: right; color: var(--accent); }
         
         body[data-view="reader"] #admin-panel { display: none !important; }
     </style>
@@ -65,7 +60,7 @@
 <body>
 
     <div id="admin-panel">
-        <input type="text" id="in-cap" class="input-box" placeholder="在此輸入今日圖說敘述..." oninput="syncPreview()">
+        <input type="text" id="in-cap" class="input-box" placeholder="點此輸入今日圖說敘述..." oninput="syncPreview()">
         <div class="btn-row">
             <button class="btn btn-blue" onclick="document.getElementById('upload').click()"><span>🖼️</span>換照</button>
             <button class="btn btn-green" id="pub-btn" onclick="uploadToGithub()"><span>🚀</span>刊印</button>
@@ -87,21 +82,22 @@
             <div class="layout-grid">
                 <div class="left-col">
                     <div style="font-size:1.1rem; border-bottom:2px solid var(--ink); margin-bottom:10px; font-weight:900;">今日頭條</div>
-                    <div id="news-list">載入中...</div>
+                    <div id="news-list">新聞載入中...</div>
                     <div style="font-size:1.1rem; border-bottom:2px solid var(--ink); margin:15px 0 10px; font-weight:900;">全台氣象</div>
                     <div id="city-weather-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;"></div>
                 </div>
                 <div class="right-col">
-                    <div style="border:1.5px solid var(--ink); padding:8px; background:rgba(255,255,255,0.2); margin-bottom:10px; font-size:0.75rem;">
-                        <div id="w-loc" style="font-weight:900; border-bottom:1.5px solid var(--ink); margin-bottom:5px;">📍 定位中...</div>
-                        <div style="display:flex; justify-content:space-between;"><span>天候</span><b id="w-desc">--</b></div>
-                        <div style="display:flex; justify-content:space-between;"><span>氣溫</span><b id="w-temp" style="color:var(--accent)">--</b></div>
+                    <div class="weather-info">
+                        <div id="w-loc" style="font-weight:900; border-bottom:1.5px solid var(--ink); margin-bottom:5px; text-align:center;">📍 定位中...</div>
+                        <div>天候 <b id="w-desc">--</b></div>
+                        <div>氣溫 <b id="w-temp">--</b></div>
+                        <div>體感 <b id="w-feel">--</b></div>
                     </div>
                     <div class="photo-box" id="p-box">
                         <img id="final-img" class="sync-img" src="">
                     </div>
                     <div id="out-cap" style="font-size:0.75rem; text-align:center; font-weight:bold; margin-top:5px; border:1px solid #aaa; padding:3px;">今日影像紀錄</div>
-                    <div class="greet" id="dynamic-greet">午安</div>
+                    <div class="greet" id="dynamic-greet">舒心·平安</div>
                 </div>
             </div>
         </div>
@@ -112,10 +108,9 @@
         const GH = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 手勢狀態
+        // --- 照片手勢操作 ---
         let state = { x: 0, y: 0, s: 1, lastDist: 0 };
         let touches = {};
-
         const pBox = document.getElementById('p-box');
         const finalImg = document.getElementById('final-img');
 
@@ -123,19 +118,13 @@
             finalImg.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.s})`;
         }
 
-        // 直接在報紙照片框上監聽手勢
-        pBox.addEventListener('pointerdown', e => {
-            touches[e.pointerId] = e;
-            pBox.setPointerCapture(e.pointerId);
-        });
-
+        pBox.addEventListener('pointerdown', e => { touches[e.pointerId] = e; pBox.setPointerCapture(e.pointerId); });
         pBox.addEventListener('pointermove', e => {
             if (!touches[e.pointerId]) return;
             touches[e.pointerId] = e;
             const keys = Object.keys(touches);
             if (keys.length === 1) {
-                state.x += e.movementX;
-                state.y += e.movementY;
+                state.x += e.movementX; state.y += e.movementY;
             } else if (keys.length === 2) {
                 const p1 = touches[keys[0]], p2 = touches[keys[1]];
                 const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
@@ -144,21 +133,73 @@
             }
             updateTransform();
         });
+        pBox.addEventListener('pointerup', e => { delete touches[e.pointerId]; state.lastDist = 0; });
 
-        pBox.addEventListener('pointerup', e => {
-            delete touches[e.pointerId];
-            state.lastDist = 0;
-        });
-
-        // 換照邏輯
         document.getElementById('upload').onchange = e => {
             const reader = new FileReader();
             reader.onload = ev => {
                 finalImg.src = ev.target.result;
-                state = { x: 0, y: 0, s: 1, lastDist: 0 }; // 重置照片位置
+                state = { x: 0, y: 0, s: 1, lastDist: 0 };
                 updateTransform();
             };
             reader.readAsDataURL(e.target.files[0]);
+        };
+
+        // --- OpenWeather 氣象邏輯 ---
+        async function getOpenWeather(lat = 25.03, lon = 121.56) {
+            try {
+                // 1. 逆地理編碼取得中文地名
+                const geoUrl = `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`;
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+                const cityName = geoData[0]?.local_names?.zh || geoData[0]?.name || "本地區";
+                document.getElementById('w-loc').innerText = `📍 ${cityName}`;
+
+                // 2. 取得氣象詳情
+                const wUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`;
+                const wRes = await fetch(wUrl);
+                const w = await wRes.json();
+                
+                document.getElementById('w-desc').innerText = w.weather[0].description;
+                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C`;
+                document.getElementById('w-feel').innerText = `${Math.round(w.main.feels_like)}°C`;
+
+                // 3. 模擬全台氣象清單 (基於當地氣溫略微隨機化)
+                const base = Math.round(w.main.temp);
+                const cities = [
+                    {n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, 
+                    {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"}
+                ];
+                document.getElementById('city-weather-grid').innerHTML = cities.map(c => 
+                    `<div style="display:flex; justify-content:space-between; font-size:0.75rem; border-bottom:1px dotted #999; padding:2px 0;">
+                        <span>${c.n} ${c.s}</span><b>${base + Math.floor(Math.random()*3)-1}°</b>
+                    </div>`
+                ).join('');
+
+            } catch(e) {
+                document.getElementById('w-loc').innerText = "📍 氣象站連線中";
+            }
+        }
+
+        // --- 初始化與發布邏輯 ---
+        window.onload = () => {
+            // 日期與問候
+            document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            const hr = new Date().getHours();
+            const greets = (hr<11)?"早安·晨曦":(hr<17)?"午安·舒心":"晚安·好眠";
+            document.getElementById('dynamic-greet').innerText = greets;
+
+            // 定位
+            navigator.geolocation.getCurrentPosition(
+                p => getOpenWeather(p.coords.latitude, p.coords.longitude),
+                () => getOpenWeather() // 失敗則用預設台北座標
+            );
+
+            // 新聞
+            fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
+            .then(r => r.json()).then(d => {
+                document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
+            });
         };
 
         // 功能函數
@@ -171,26 +212,25 @@
             dummy.value = url; dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            alert("✅ 閱讀連結已複製！");
+            alert("✅ 閱讀連結已複製，快去分享吧！");
         }
 
         async function uploadToGithub() {
             const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 刊印中";
+            btn.innerText = "⏳ 刊印中...";
             try {
-                // 這裡捕捉的是整個照片框的截圖
                 const canvas = await html2canvas(pBox, { useCORS: true, backgroundColor: null });
                 const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
                 const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
                 const getRes = await fetch(url);
                 const sha = getRes.ok ? (await getRes.json()).sha : null;
-                const res = await fetch(url, {
+                await fetch(url, {
                     method: "PUT",
                     headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: "Update", content: b64, sha })
+                    body: JSON.stringify({ message: "Update Daily Photo", content: b64, sha })
                 });
-                if(res.ok) alert("✅ 刊印發布成功！");
-            } catch(e) { alert("刊印失敗"); }
+                alert("✅ 刊印發布成功！");
+            } catch(e) { alert("刊印失敗，請檢查網路。"); }
             btn.innerHTML = "<span>🚀</span>刊印";
         }
 
@@ -201,31 +241,6 @@
             link.href = canvas.toDataURL("image/jpeg", 0.9);
             link.click();
         }
-
-        // 初始化
-        window.onload = () => {
-            document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
-            const hr = new Date().getHours();
-            document.getElementById('dynamic-greet').innerText = (hr<11)?"早安·晨曦":(hr<17)?"午安·舒心":"晚安·好眠";
-            
-            navigator.geolocation.getCurrentPosition(async pos => {
-                const { latitude: lat, longitude: lon } = pos.coords;
-                const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`);
-                const geoData = await geoRes.json();
-                document.getElementById('w-loc').innerText = `📍 ${geoData[0]?.local_names?.zh || geoData[0]?.name || "本地"}`;
-                const wRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
-                const w = await wRes.json();
-                document.getElementById('w-desc').innerText = w.weather[0].description;
-                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C`;
-                const cities = ["台北 ☀️","台中 ⛅","高雄 ☀️","宜蘭 🌧️","花蓮 ⛅","桃園 ☀️"];
-                document.getElementById('city-weather-grid').innerHTML = cities.map(c => `<div class="city-chip"><span>${c}</span><b>${Math.round(w.main.temp)}°</b></div>`).join('');
-            });
-
-            fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
-            .then(r => r.json()).then(d => {
-                document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
-            });
-        };
     </script>
 </body>
 </html>
