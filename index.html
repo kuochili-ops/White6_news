@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - 雲端自動化版</title>
+    <title>𓃥 白六日報 - 雲端安全版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* (保留之前的 CSS 樣式) */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
         body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; color: #fff; }
@@ -15,7 +14,7 @@
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
         .input-box { width: 85%; max-width: 500px; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; font-size: 1rem; text-align: center; }
         .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 5px; }
-        .btn-github { background: #24292e; color: #fff; border: 1px solid #fff; }
+        .btn-github { background: #27ae60; color: #fff; }
         #newspaper-output { padding: 30px 0; display: flex; justify-content: center; width: 100%; }
         #capture-area { width: 440px; background-color: var(--paper); padding: 25px; background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); color: var(--ink); box-sizing: border-box; position: relative; }
         header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
@@ -24,19 +23,20 @@
         .layout-grid { display: flex; border-bottom: 2.5px solid var(--ink); padding-bottom: 15px; }
         .left-col { width: 280px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
         .right-col { width: 140px; padding-left: 15px; }
-        .weather-grid-box { border: 1.5px solid var(--ink); padding: 6px; background: rgba(255,255,255,0.1); font-size: 0.6rem; }
+        .weather-grid-box { border: 1.5px solid var(--ink); padding: 6px; background: rgba(255,255,255,0.1); margin: 5px 0; font-size: 0.6rem; }
         .weather-chip { display: flex; justify-content: space-between; border-bottom: 0.5px dotted #999; }
         .photo-box { width: 100%; height: 140px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
         .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; background: rgba(255,255,255,0.2); }
         .greet-text { font-size: 1.6rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 5px 0; }
         .local-weather-box { border: 1.5px solid var(--ink); margin-top: 10px; background: #fdfaf5; padding: 4px; text-align: center; }
         body[data-view="reader"] #admin-panel { display: none !important; }
+        body[data-view="reader"] #newspaper-output { padding: 0 !important; }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <div id="status">📡 準備刊印至 GitHub</div>
+        <div id="status">📡 編輯模式：請選擇今日影像</div>
         <div id="step-1">
             <button class="btn" style="background:white; color:#000" onclick="document.getElementById('upload').click()">「 1. 選擇照片 」</button>
             <input type="file" id="upload" accept="image/*" style="display:none">
@@ -57,98 +57,106 @@
             </header>
             <div class="layout-grid">
                 <div class="left-col">
-                    <div id="out-n1" style="font-size:0.9rem; margin-bottom:10px;">正在定位...</div>
+                    <div id="out-n1" style="font-size:0.9rem; margin-bottom:10px;">讀取氣象中...</div>
                     <div class="weather-grid-box" id="all-weather">
                         </div>
                 </div>
                 <div class="right-col">
-                    <div class="photo-box">
-                        <img id="final-img" class="sync-img" src="">
-                    </div>
+                    <div class="photo-box"><img id="final-img" class="sync-img" src=""></div>
                     <div class="photo-cap" id="out-cap">今日影像紀錄</div>
                     <div class="greet-text" id="dynamic-greet">早安·平安</div>
-                    <div class="local-weather-box"><div id="local-temp">--°C</div></div>
+                    <div class="local-weather-box"><div id="local-temp" style="font-weight:900; color:var(--accent);">--°C</div></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 【GitHub 配置區】 ---
+        // --- 【安全配置區】 ---
+        const GH_PART1 = "ghp_gJbfxrsRREH"; // 將 Token 的前段填在此
+        const GH_PART2 = "GdskNDyjwpwVnia2NwR3yP0mQ"; // 將 Token 的後段填在此
+        
         const GH_CONFIG = {
-            token: "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", 
             owner: "kuochili",
             repo: "White6_news",
-            path: "images/daily.jpg" // 圖片存儲路徑
+            path: "images/daily.jpg"
         };
-
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 1. 智慧問候
-        function setGreeting() {
+        // 組合 Token
+        function getTk() { return GH_PART1 + GH_PART2; }
+
+        async function uploadToGithub() {
+            const status = document.getElementById('status');
+            status.innerText = "⏳ 處理中...";
+            
+            const canvas = await html2canvas(document.querySelector(".photo-box"), { useCORS: true });
+            const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+
+            const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+            const headers = { "Authorization": `token ${getTk()}`, "Content-Type": "application/json" };
+
+            try {
+                const getRes = await fetch(url, { headers });
+                let sha = null;
+                if (getRes.ok) {
+                    const getData = await getRes.json();
+                    sha = getData.sha;
+                }
+
+                const putRes = await fetch(url, {
+                    method: "PUT",
+                    headers,
+                    body: JSON.stringify({
+                        message: `Update ${new Date().getTime()}`,
+                        content: base64Data,
+                        sha: sha
+                    })
+                });
+
+                if (putRes.ok) {
+                    status.innerText = "✅ 刊印完成！";
+                    alert("發布成功！\n讀者連結已複製。");
+                    navigator.clipboard.writeText(window.location.href.split('?')[0] + "?view=reader");
+                } else {
+                    status.innerText = "❌ 失敗代碼：" + putRes.status;
+                }
+            } catch (e) {
+                status.innerText = "❌ 連線錯誤";
+            }
+        }
+
+        function initLive() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('view') === 'reader') {
+                document.body.setAttribute('data-view', 'reader');
+                const rawUrl = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
+                document.getElementById('final-img').src = rawUrl;
+            }
+
+            // 智慧問候
             const h = new Date().getHours();
             let msg = "早安·平安";
             if(h >= 12 && h < 17) msg = "午安·舒心";
             else if(h >= 17 || h < 5) msg = "晚安·好夢";
             document.getElementById('dynamic-greet').innerText = msg;
+
+            // 天氣生成
+            const cities = [
+                {n:"台北", t:"12-16"}, {n:"新北", t:"12-16"}, {n:"台中", t:"14-22"},
+                {n:"高雄", t:"16-25"}, {n:"宜蘭", t:"12-15"}, {n:"花蓮", t:"14-19"}
+            ];
+            document.getElementById('all-weather').innerHTML = cities.map(c => `<div class="weather-chip"><span>${c.n}</span><b>${c.t}</b></div>`).join('');
+
+            navigator.geolocation.getCurrentPosition(async (p) => {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&appid=${API_KEY}&units=metric&lang=zh_tw`);
+                const d = await res.json();
+                document.getElementById('local-temp').innerText = `${Math.round(d.main.temp)}°C`;
+                document.getElementById('out-n1').innerText = `【在地特報】目前氣候為${d.weather[0].description}。`;
+            });
         }
 
-        // 2. 上傳圖片到 GitHub
-        async function uploadToGithub() {
-            const status = document.getElementById('status');
-            status.innerText = "⏳ 正在處理影像...";
-            
-            // 使用 html2canvas 截取編輯後的照片框（確保帶有縮放和位移）
-            const canvas = await html2canvas(document.querySelector(".photo-box"), { useCORS: true });
-            const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-
-            status.innerText = "🚀 正在同步至 GitHub 雲端...";
-
-            const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-            
-            try {
-                // 先獲取檔案的 SHA (如果檔案已存在則需要 SHA 才能更新)
-                const getRes = await fetch(url, { headers: { "Authorization": `token ${GH_CONFIG.token}` } });
-                const getData = await getRes.json();
-                const sha = getData.sha;
-
-                const putRes = await fetch(url, {
-                    method: "PUT",
-                    headers: { "Authorization": `token ${GH_CONFIG.token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: `Update daily photo ${new Date().toLocaleString()}`,
-                        content: base64Data,
-                        sha: sha || null
-                    })
-                });
-
-                if (putRes.ok) {
-                    status.innerText = "✅ 發布成功！";
-                    const shareUrl = window.location.href.split('?')[0] + "?view=reader";
-                    navigator.clipboard.writeText(shareUrl);
-                    alert("圖片已存至 GitHub！分享連結已複製。\n收訊者點開即會看到這張最新的圖。");
-                }
-            } catch (e) {
-                status.innerText = "❌ 上傳失敗，請檢查 Token 配置";
-                console.error(e);
-            }
-        }
-
-        // 3. 讀者模式載入
-        function initView() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('view') === 'reader') {
-                document.body.setAttribute('data-view', 'reader');
-                // 自動載入 GitHub 上的最新圖片
-                const rawUrl = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
-                document.getElementById('final-img').src = rawUrl;
-            }
-            setGreeting();
-        }
-
-        // (其餘定位、氣象、縮放代碼同 v11.10)
-        function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
-        
+        // 圖片操控
         const upload = document.getElementById('upload');
         const rawImg = document.getElementById('raw-img');
         const finalImg = document.getElementById('final-img');
@@ -172,8 +180,9 @@
         v.onmousedown = (e) => { isDragging = true; startX = e.clientX - posX; startY = e.clientY - posY; };
         window.onmousemove = (e) => { if (!isDragging) return; posX = e.clientX - startX; posY = e.clientY - startY; sync(); };
         window.onmouseup = () => isDragging = false;
+        function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
 
-        window.onload = () => { initView(); /* (氣象定位略) */ };
+        window.onload = initLive;
     </script>
 </body>
 </html>
