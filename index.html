@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v9.3 終極穩定版</title>
+    <title>𓃥 白六日報 - v9.4 古硯彩墨版</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
 
@@ -15,7 +15,7 @@
         }
 
         body {
-            background-color: #222;
+            background-color: #1a1a1a;
             margin: 0;
             padding: 0;
             font-family: 'Noto Serif TC', serif;
@@ -29,19 +29,20 @@
             position: sticky;
             top: 0;
             z-index: 9999;
-            background: #333;
+            background: #222;
             width: 100%;
             padding: 15px 0;
-            color: white;
+            color: #ccc;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            border-bottom: 1px solid #444;
         }
 
         .edit-viewport {
             width: 140px; 
             height: 180px;
             margin: 10px auto;
-            border: 2px solid #fff;
+            border: 2px solid var(--paper-color);
             position: relative;
             overflow: hidden;
             background: #000;
@@ -64,11 +65,12 @@
             font-weight: bold;
             margin: 5px;
             border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         /* 報紙內容區 */
         #newspaper-output {
-            display: none; /* 初始隱藏 */
+            display: none;
             padding: 30px 0;
             width: 100%;
             justify-content: center;
@@ -79,7 +81,7 @@
             max-width: 450px;
             background-color: var(--paper-color);
             padding: 25px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             color: var(--ink-color);
             transform: rotate(-0.5deg);
@@ -119,6 +121,7 @@
             padding-left: 12px;
             line-height: 2.2;
             flex-grow: 1;
+            text-align: justify;
         }
 
         .photo-frame {
@@ -128,7 +131,8 @@
             overflow: hidden;
             position: relative;
             background: #fff;
-            filter: grayscale(1) contrast(1.1) sepia(0.2);
+            /* 關鍵：古樸彩色濾鏡 */
+            filter: sepia(0.3) contrast(1.2) saturate(0.7); 
         }
 
         .weather-report {
@@ -136,6 +140,7 @@
             margin-top: 10px;
             padding-top: 10px;
             font-size: 0.7rem;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -161,7 +166,7 @@
     <div id="newspaper-output">
         <article class="newspaper-module">
             <header>
-                <div style="font-size:0.7rem; display:flex; justify-content:space-between;">
+                <div style="font-size:0.7rem; display:flex; justify-content:space-between; font-weight:bold;">
                     <span>歲次乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
@@ -176,7 +181,7 @@
             <div class="content-grid">
                 <section class="vertical-text-col">
                     <span style="font-size:1.8rem; font-weight:900; color:var(--accent);">早安平安</span>
-                    <span id="display-quote" style="font-size:1.1rem; font-weight:700;"></span>
+                    <span id="display-quote" style="font-size:1.1rem; font-weight:700; color:#333;"></span>
                     <br>
                     <span style="font-size:0.75rem; color:#444;">
                         【本報快訊】強烈冷氣團發威，全台橙色低溫特報。北投清晨測得 8.9 度。
@@ -190,10 +195,16 @@
                     </div>
                     <div class="weather-report">
                         <strong>【各縣市氣象】</strong><br>
-                        台北 9° | 台中 11°<br>高雄 14° | 宜蘭 10°
+                        台北 9° | 台中 11°<br>
+                        高雄 14° | 宜蘭 10°<br>
+                        花蓮 14° | 澎湖 15°
                     </div>
                 </aside>
             </div>
+            
+            <footer style="margin-top:20px; text-align:center; font-size:0.5rem; border-top:1px solid var(--border-color); padding-top:10px; opacity:0.5;">
+                𓃥 白六日報館 · 靜思語每日輪播
+            </footer>
         </article>
     </div>
 
@@ -240,7 +251,7 @@
         };
 
         function publish() {
-            sync(); // 確保出版時最後一次同步
+            sync();
             document.getElementById('editor-deck').style.display = 'none';
             document.getElementById('newspaper-output').style.display = 'flex';
             window.scrollTo(0,0);
@@ -252,7 +263,7 @@
             finalImg.style.transform = transform;
         }
 
-        // 觸控邏輯
+        // 拖動邏輯
         const handleStart = (e) => {
             isDragging = true;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
