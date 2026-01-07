@@ -3,31 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v13.4 終極核心版</title>
+    <title>𓃥 白六日報 - v13.5 終極修復版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; }
         
-        /* 核心管理區：採用最原始的區塊堆疊 */
-        .admin-box { width: 100%; max-width: 440px; background: #333; padding: 15px; border-radius: 10px; border: 2px solid var(--accent); margin-bottom: 20px; box-sizing: border-box; }
+        /* 核心管理區：禁止文字選取以防干擾點擊 */
+        .admin-box { 
+            width: 100%; max-width: 440px; background: #333; padding: 15px; 
+            border-radius: 10px; border: 2px solid var(--accent); margin-bottom: 20px; 
+            box-sizing: border-box; 
+            -webkit-user-select: none; /* 防止 iOS 長按選取文字 */
+            user-select: none;
+        }
         .instruction { color: #f39c12; font-weight: bold; margin-bottom: 8px; display: block; font-size: 0.9rem; }
         
-        /* 1. 檔案上傳：完全不修飾，保證原生觸發 */
-        .raw-input { width: 100%; font-size: 16px; background: white; color: black; padding: 10px; margin-bottom: 15px; display: block; border-radius: 4px; }
+        /* 1. 檔案上傳：加大點擊區域 */
+        .raw-input { 
+            width: 100%; font-size: 18px; background: #eee; color: black; 
+            padding: 15px; margin-bottom: 15px; display: block; border-radius: 6px; 
+            border: 2px solid #999;
+        }
         
-        /* 2. 連結分享：改用實體 Input 框，保證可長按複製 */
-        .url-box { width: 100%; padding: 10px; background: #000; color: #00ff00; border: 1px solid #666; font-family: monospace; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; }
+        /* 2. 連結分享：增加複製按鈕 */
+        .url-row { display: flex; gap: 5px; margin-bottom: 15px; }
+        .url-box { 
+            flex: 1; padding: 10px; background: #000; color: #00ff00; 
+            border: 1px solid #666; font-family: monospace; font-size: 14px; 
+            box-sizing: border-box; border-radius: 4px;
+            pointer-events: auto; /* 僅此處允許點擊 */
+        }
+        .btn-copy { background: #f39c12; border: none; color: white; padding: 0 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        .btn-publish { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-weight: 900; font-size: 1.1rem; border-radius: 8px; cursor: pointer; display: none; }
+        .btn-publish { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-weight: 900; font-size: 1.1rem; border-radius: 8px; cursor: pointer; }
 
         /* 3. 編輯預覽區 */
-        .edit-zone { text-align: center; margin-bottom: 15px; }
+        .edit-ui { display: none; padding-top: 15px; border-top: 1px solid #555; }
         .edit-viewport { width: 140px; height: 140px; border: 2px solid #fff; position: relative; overflow: hidden; background: #000; margin: 0 auto 10px; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
 
         /* 報紙本體 */
+        #newspaper-output { padding: 15px 0; width: 100%; display: flex; justify-content: center; }
         #capture-area { width: 440px; background-color: var(--paper); padding: 25px; color: var(--ink); box-sizing: border-box; }
         header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
         .newspaper-title { font-size: 3.5rem; font-weight: 900; letter-spacing: 10px; margin: 5px 0; }
@@ -45,29 +63,30 @@
 <body>
 
     <div class="admin-box">
-        <span class="instruction">❶ 長按下方框框「全選」複製分享網址：</span>
-        <input type="text" readonly id="share-url" class="url-box">
+        <span class="instruction">❶ 點擊按鈕複製分享網址：</span>
+        <div class="url-row">
+            <input type="text" readonly id="share-url" class="url-box" onclick="this.select()">
+            <button class="btn-copy" onclick="copyAction()">複製</button>
+        </div>
 
-        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
-
-        <span class="instruction">❷ 點擊「選擇檔案」上傳今日照片：</span>
+        <span class="instruction">❷ 點擊下方區塊上傳今日照片：</span>
         <input type="file" id="upload" accept="image/*" class="raw-input">
         
-        <div id="edit-ui" style="display:none;">
-            <div class="edit-zone">
+        <div id="edit-ui" class="edit-ui">
+            <div style="text-align: center;">
                 <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
                 <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%;">
-                <p style="font-size:12px; color:#aaa;">(手指拖曳照片可調整位置)</p>
+                <p style="font-size:12px; color:#aaa; margin:5px 0;">(手指拖曳照片可調整位置)</p>
             </div>
-            <input type="text" id="in-cap" placeholder="輸入今日報名..." style="width:100%; padding:10px; margin-bottom:15px; box-sizing:border-box;" oninput="syncPreview()">
-            <button class="btn-publish" id="pub-btn" onclick="uploadToGithub()" style="display:block;">❸ 刊印發布報紙</button>
+            <input type="text" id="in-cap" placeholder="輸入今日圖說 (如: 大好)" style="width:100%; padding:10px; margin-bottom:15px; box-sizing:border-box;" oninput="syncPreview()">
+            <button class="btn-publish" id="pub-btn" onclick="uploadToGithub()">❸ 刊印發布報紙</button>
         </div>
     </div>
 
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div class="date-line"><span>歲次 乙巳年 十一月十九</span><span id="solar-date">2026年1月7日</span></div>
+                <div class="date-line"><span id="lunar-date">歲次 乙巳年 十一月十九</span><span id="solar-date">2026年1月7日</span></div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
             </header>
             <div class="layout-grid">
@@ -87,9 +106,12 @@
         const TK_PARTS = ["ghp_CbTbFJpfe9j2u0ER", "U80NwlkHv5NJVQ23vKXE"];
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
 
-        function setupUrl() {
-            const url = window.location.origin + window.location.pathname + "?view=reader";
-            document.getElementById('share-url').value = url;
+        function copyAction() {
+            const copyText = document.getElementById("share-url");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            alert("✅ 網址已複製！");
         }
 
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
@@ -126,13 +148,13 @@
                 const getRes = await fetch(url);
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha }) });
-                if (putRes.ok) { alert("✅ 刊印成功！"); } else { alert("失敗: " + putRes.status); }
+                if (putRes.ok) { alert("✅ 刊印成功！"); }
                 btn.innerText = "❸ 刊印發布報紙";
             } catch (e) { alert("發布失敗"); btn.innerText = "❸ 刊印發布報紙"; }
         }
 
-        async function init() {
-            setupUrl();
+        function init() {
+            document.getElementById('share-url').value = window.location.origin + window.location.pathname + "?view=reader";
             fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
             .then(r => r.json()).then(d => {
                 document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
