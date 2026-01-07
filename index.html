@@ -3,89 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v14.0</title>
+    <title>𓃥 白六日報 - v14.1</title>
     <style>
-        body { 
-            background: #1a1a1a; 
-            color: white; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh;
-            font-family: sans-serif;
-        }
-
-        /* 初始狀態：只顯示這個大區域 */
-        #init-upload-zone {
-            width: 90%;
-            max-width: 400px;
-            padding: 40px 20px;
-            border: 3px dashed #f39c12;
-            border-radius: 20px;
-            text-align: center;
-            background: #222;
-        }
-
-        .big-input {
-            width: 100%;
-            height: 80px;
-            font-size: 1.2rem;
-            margin-top: 20px;
-            background: #fff;
-            color: #000;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* 隱藏後續所有內容 */
-        #newspaper-content { display: none; width: 100%; padding: 20px 0; }
+        body { background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding-top: 50px; font-family: sans-serif; }
         
-        /* 編輯介面與報紙樣式簡化 */
+        /* 唯一的按鈕：強制放在最前面 */
+        .big-input { 
+            width: 90%; height: 120px; font-size: 24px; 
+            background: white; color: black; border: 8px solid #f39c12; 
+            border-radius: 20px; font-weight: bold; position: relative; z-index: 9999;
+        }
+
+        #editor-ui { display: none; width: 100%; text-align: center; margin-top: 20px; }
         .viewport { width: 200px; height: 200px; border: 2px solid #fff; margin: 10px auto; overflow: hidden; position: relative; background: #000; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; }
-        .paper-base { 
-            width: 440px; 
-            background: #dbd0bc; 
-            color: #2a2825; 
-            padding: 25px; 
-            margin: 20px auto;
-            box-sizing: border-box;
-            font-family: 'serif';
-        }
-        .btn-pub { background: #27ae60; color: white; padding: 15px; width: 90%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin: 20px 0; }
+        .btn-pub { background: #27ae60; color: white; padding: 20px; width: 90%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin-top: 20px; }
+        
+        /* 報紙底稿樣式：初始隱藏 */
+        #newspaper-area { display: none; width: 440px; background: #dbd0bc; color: #2a2825; padding: 20px; margin-top: 30px; }
     </style>
 </head>
 <body>
 
-    <div id="init-upload-zone">
-        <h2 style="margin:0;">𓃥 白六日報系統</h2>
-        <p style="color: #aaa;">請先選取今日照片以開啟編輯器</p>
-        <input type="file" id="main-upload" accept="image/*" class="big-input">
+    <div id="step-1-container">
+        <h2 id="msg">步驟 1：請點下方開啟照片</h2>
+        <input type="file" id="upload" accept="image/*" class="big-input">
     </div>
 
-    <div id="newspaper-content">
-        <div style="text-align:center; background:#333; padding:20px; margin:0 10px; border-radius:15px;">
-            <h3>🎨 調整照片位置與大小</h3>
-            <div class="viewport" id="v-frame">
-                <img id="edit-img" class="sync-img" src="">
-            </div>
-            <input type="range" id="zoom-bar" min="0.1" max="4" step="0.01" value="1" style="width: 80%;">
-            <br>
-            <button class="btn-pub" onclick="startPublish()" id="pub-btn">確認並刊印發布</button>
+    <div id="editor-ui">
+        <h2>步驟 2：調整位置與大小</h2>
+        <div class="viewport" id="v-frame">
+            <img id="edit-img" class="sync-img" src="">
         </div>
-
-        <div class="paper-base" id="capture-area">
-            <h1 style="text-align:center; font-size:3rem; margin:0; border-bottom:4px solid #2a2825;">白六日報</h1>
-            <div style="display:flex; margin-top:20px;">
-                <div style="flex:1; padding-right:15px; border-right:1px solid #2a2825;">
-                    <p><b>今日頭條：</b> 報紙系統更新 v14.0 穩定版，修復了手機端點擊權限衝突問題...</p>
-                </div>
-                <div style="width:160px; padding-left:15px;">
-                    <div style="width:100%; height:160px; border:1px solid #000; overflow:hidden; position:relative;">
-                        <img id="paper-img" class="sync-img" src="">
+        <input type="range" id="zoom-ctrl" min="0.1" max="4" step="0.01" value="1" style="width: 80%;">
+        <br>
+        <button class="btn-pub" onclick="doUpload()">確定刊印發布</button>
+        
+        <div id="newspaper-area">
+            <h1 style="border-bottom:3px solid #000; margin:0; font-size:3rem;">白六日報</h1>
+            <div style="display:flex; margin-top:15px;">
+                <div style="flex:1; text-align:left; border-right:1px solid #000; padding-right:10px;" id="news-box">載入新聞中...</div>
+                <div style="width:160px; padding-left:10px;">
+                    <div id="p-box" style="width:100%; height:160px; overflow:hidden; position:relative; border:1px solid #000;">
+                        <img id="final-img" class="sync-img" src="">
                     </div>
                 </div>
             </div>
@@ -94,66 +54,70 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const TK_PARTS = ["ghp_CbTbFJpfe9j2u0ER", "U80NwlkHv5NJVQ23vKXE"];
-        const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
+        const TK = "ghp_CbTbFJpfe9j2u0ER" + "U80NwlkHv5NJVQ23vKXE";
+        const CONF = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
+
+        const upload = document.getElementById('upload');
+        const editor = document.getElementById('editor-ui');
+        const editImg = document.getElementById('edit-img');
+        const finalImg = document.getElementById('final-img');
+        const zoom = document.getElementById('zoom-ctrl');
 
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
-        const mainUpload = document.getElementById('main-upload');
-        const editImg = document.getElementById('edit-img');
-        const paperImg = document.getElementById('paper-img');
-        const initZone = document.getElementById('init-upload-zone');
-        const content = document.getElementById('newspaper-content');
 
-        // 監聽選取照片
-        mainUpload.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                // 1. 注入圖片
-                editImg.src = paperImg.src = ev.target.result;
-                
-                // 2. 切換介面：隱藏按鈕區，顯示報紙內容
-                initZone.style.display = 'none';
-                content.style.display = 'block';
-                
-                // 3. 初始化位置
-                scale = 1; posX = 0; posY = 0;
-                refresh();
-            };
-            reader.readAsDataURL(file);
+        // 核心：監聽上傳
+        upload.onchange = function(e) {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    editImg.src = finalImg.src = ev.target.result;
+                    document.getElementById('step-1-container').style.display = 'none';
+                    editor.style.display = 'block';
+                    document.getElementById('newspaper-area').style.display = 'block';
+                    // 順便抓新聞
+                    fetchNews();
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
         };
 
-        function refresh() {
+        // 縮放與拖曳邏輯
+        function update() {
             const t = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
-            editImg.style.transform = paperImg.style.transform = t;
+            editImg.style.transform = finalImg.style.transform = t;
         }
 
-        document.getElementById('zoom-bar').oninput = (e) => { scale = e.target.value; refresh(); };
+        zoom.oninput = () => { scale = zoom.value; update(); };
 
         const vFrame = document.getElementById('v-frame');
         vFrame.ontouchstart = (e) => { isDragging = true; startX = e.touches[0].clientX - posX; startY = e.touches[0].clientY - posY; };
-        window.ontouchmove = (e) => { if (!isDragging) return; posX = e.touches[0].clientX - startX; posY = e.touches[0].clientY - startY; refresh(); };
+        window.ontouchmove = (e) => { if(!isDragging) return; posX = e.touches[0].clientX - startX; posY = e.touches[0].clientY - startY; update(); };
         window.ontouchend = () => isDragging = false;
 
-        async function startPublish() {
-            const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 發布中...";
+        async function doUpload() {
+            const btn = event.target;
+            btn.innerText = "⏳ 刊印中...";
             try {
-                const canvas = await html2canvas(document.getElementById('capture-area'), { useCORS: true });
+                const canvas = await html2canvas(document.getElementById('p-box'));
                 const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-                const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-                const res = await fetch(url);
-                let sha = res.ok ? (await res.json()).sha : null;
-                const put = await fetch(url, { 
-                    method: "PUT", 
-                    headers: { "Authorization": `token ${TK_PARTS.join('')}`, "Content-Type": "application/json" }, 
-                    body: JSON.stringify({ message: "Update", content: b64, sha }) 
+                const url = `https://api.github.com/repos/${CONF.owner}/${CONF.repo}/contents/${CONF.CONF_path || CONF.path}`;
+                const get = await fetch(url);
+                const sha = get.ok ? (await get.json()).sha : null;
+                await fetch(url, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: "Update", content: b64, sha })
                 });
-                if (put.ok) alert("✅ 刊印完成！");
-            } catch (e) { alert("發生錯誤"); }
-            btn.innerText = "確認並刊印發布";
+                alert("✅ 刊印成功！");
+                location.reload();
+            } catch (e) { alert("錯誤"); btn.innerText = "確定刊印發布"; }
+        }
+
+        function fetchNews() {
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant')
+            .then(r => r.json()).then(d => {
+                document.getElementById('news-box').innerHTML = d.items.slice(0, 3).map(i => `<p style="font-size:12px;margin:5px 0;">• ${i.title.split(' - ')[0]}</p>`).join('');
+            });
         }
     </script>
 </body>
