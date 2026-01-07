@@ -3,69 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v13.3 鋼鐵版</title>
+    <title>𓃥 白六日報 - v13.4 終極核心版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
+        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px; }
         
-        /* 鋼鐵管理區：完全露出不隱藏 */
-        #admin-panel { background: #222; width: 100%; padding: 15px 0; border-bottom: 3px solid var(--accent); position: relative; }
-        .admin-box { width: 90%; margin: 0 auto; background: #333; padding: 15px; border-radius: 10px; border: 1px solid #555; }
+        /* 核心管理區：採用最原始的區塊堆疊 */
+        .admin-box { width: 100%; max-width: 440px; background: #333; padding: 15px; border-radius: 10px; border: 2px solid var(--accent); margin-bottom: 20px; box-sizing: border-box; }
+        .instruction { color: #f39c12; font-weight: bold; margin-bottom: 8px; display: block; font-size: 0.9rem; }
         
-        .title-tag { color: #f39c12; font-weight: 900; font-size: 0.9rem; margin-bottom: 10px; display: block; }
+        /* 1. 檔案上傳：完全不修飾，保證原生觸發 */
+        .raw-input { width: 100%; font-size: 16px; background: white; color: black; padding: 10px; margin-bottom: 15px; display: block; border-radius: 4px; }
         
-        /* 檔案選擇器：原始樣式最安全 */
-        .file-input-real { width: 100%; background: #eee; color: #000; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 1rem; }
-        
-        /* 連結顯示框：讓用戶可以長按複製 */
-        .url-display { width: 100%; background: #111; color: #00ff00; border: 1px dashed #555; padding: 8px; font-size: 0.75rem; word-break: break-all; margin-bottom: 10px; text-align: left; }
+        /* 2. 連結分享：改用實體 Input 框，保證可長按複製 */
+        .url-box { width: 100%; padding: 10px; background: #000; color: #00ff00; border: 1px solid #666; font-family: monospace; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; }
 
-        .btn { width: 100%; padding: 15px; border: none; cursor: pointer; font-weight: 900; border-radius: 8px; font-size: 1rem; margin-top: 10px; }
-        .btn-green { background: #27ae60; color: #fff; }
+        .btn-publish { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-weight: 900; font-size: 1.1rem; border-radius: 8px; cursor: pointer; display: none; }
 
-        .edit-viewport { width: 150px; height: 150px; border: 2px solid #fff; position: relative; overflow: hidden; background: #444; margin: 15px auto; touch-action: none; }
+        /* 3. 編輯預覽區 */
+        .edit-zone { text-align: center; margin-bottom: 15px; }
+        .edit-viewport { width: 140px; height: 140px; border: 2px solid #fff; position: relative; overflow: hidden; background: #000; margin: 0 auto 10px; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
 
         /* 報紙本體 */
-        #newspaper-output { padding: 20px 0; width: 100%; display: flex; justify-content: center; }
-        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; color: var(--ink); box-sizing: border-box; position: relative; }
+        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; color: var(--ink); box-sizing: border-box; }
         header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
         .newspaper-title { font-size: 3.5rem; font-weight: 900; letter-spacing: 10px; margin: 5px 0; }
-        .date-line { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 900; }
         .layout-grid { display: flex; border-bottom: 2.5px solid var(--ink); padding-bottom: 15px; }
         .left-col { width: 250px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
         .right-col { width: 160px; padding-left: 15px; }
         .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
-        .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 2px 0; }
         .photo-box { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
         .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; }
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 10px 0; }
         
-        body[data-view="reader"] #admin-panel { display: none !important; }
+        body[data-view="reader"] .admin-box { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="admin-panel">
-        <div class="admin-box">
-            <b class="title-tag">📤 第一步：點下方按鈕選照片</b>
-            <input type="file" id="upload" accept="image/*" class="file-input-real">
-            
-            <div id="edit-controls" style="display:none;">
-                <b class="title-tag">🎨 第二步：調整位置/縮放並發布</b>
-                <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
-                <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 100%;">
-                <input type="text" id="in-cap" style="width:100%; padding:10px; margin:10px 0; box-sizing:border-box;" placeholder="輸入今日報名..." oninput="syncPreview()">
-                <button class="btn btn-green" id="pub-btn" onclick="uploadToGithub()">確定刊印發布</button>
-            </div>
+    <div class="admin-box">
+        <span class="instruction">❶ 長按下方框框「全選」複製分享網址：</span>
+        <input type="text" readonly id="share-url" class="url-box">
 
-            <hr style="border:0; border-top:1px solid #555; margin:20px 0;">
-            
-            <b class="title-tag">🔗 分享連結 (長按下方綠字複製)</b>
-            <div class="url-display" id="url-text">正在載入網址...</div>
+        <hr style="border:0; border-top:1px solid #555; margin:15px 0;">
+
+        <span class="instruction">❷ 點擊「選擇檔案」上傳今日照片：</span>
+        <input type="file" id="upload" accept="image/*" class="raw-input">
+        
+        <div id="edit-ui" style="display:none;">
+            <div class="edit-zone">
+                <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
+                <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%;">
+                <p style="font-size:12px; color:#aaa;">(手指拖曳照片可調整位置)</p>
+            </div>
+            <input type="text" id="in-cap" placeholder="輸入今日報名..." style="width:100%; padding:10px; margin-bottom:15px; box-sizing:border-box;" oninput="syncPreview()">
+            <button class="btn-publish" id="pub-btn" onclick="uploadToGithub()" style="display:block;">❸ 刊印發布報紙</button>
         </div>
     </div>
 
@@ -78,7 +73,6 @@
             <div class="layout-grid">
                 <div class="left-col">
                     <div id="news-list">新聞載入中...</div>
-                    <div class="weather-grid" id="city-weather-grid"></div>
                 </div>
                 <div class="right-col">
                     <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src=""></div>
@@ -92,15 +86,12 @@
     <script>
         const TK_PARTS = ["ghp_CbTbFJpfe9j2u0ER", "U80NwlkHv5NJVQ23vKXE"];
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
-        const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 顯示網址供長按複製
-        function showUrl() {
+        function setupUrl() {
             const url = window.location.origin + window.location.pathname + "?view=reader";
-            document.getElementById('url-text').innerText = url;
+            document.getElementById('share-url').value = url;
         }
 
-        // 圖片編輯
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
         const viewport = document.getElementById('viewport'), rawImg = document.getElementById('raw-img'), finalImg = document.getElementById('final-img'), zoomCtrl = document.getElementById('zoom-ctrl');
         
@@ -114,20 +105,19 @@
         window.ontouchend = () => isDragging = false;
         zoomCtrl.oninput = () => { scale = zoomCtrl.value; updateTransform(); };
 
-        // 監聽原始 Input
         document.getElementById('upload').onchange = (e) => {
             if (!e.target.files[0]) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 rawImg.src = finalImg.src = ev.target.result;
-                document.getElementById('edit-controls').style.display = 'block';
+                document.getElementById('edit-ui').style.display = 'block';
             };
             reader.readAsDataURL(e.target.files[0]);
         };
 
         async function uploadToGithub() {
             const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 處理中...";
+            btn.innerText = "⏳ 刊印中...";
             try {
                 const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
                 const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
@@ -137,13 +127,16 @@
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha }) });
                 if (putRes.ok) { alert("✅ 刊印成功！"); } else { alert("失敗: " + putRes.status); }
-                btn.innerText = "確定刊印發布";
-            } catch (e) { alert("系統出錯"); btn.innerText = "確定刊印發布"; }
+                btn.innerText = "❸ 刊印發布報紙";
+            } catch (e) { alert("發布失敗"); btn.innerText = "❸ 刊印發布報紙"; }
         }
 
         async function init() {
-            showUrl();
-            // 載入新聞與天氣 (略)
+            setupUrl();
+            fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
+            .then(r => r.json()).then(d => {
+                document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
+            });
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
             if (new URLSearchParams(window.location.search).get('view') === 'reader') {
                 document.body.setAttribute('data-view', 'reader');
