@@ -2,235 +2,294 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v17.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>𓃥 白六日報 - v9.6 專業排版版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
-        :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* 解決底部黑區：讓 body 背景直接模擬紙張顏色，或設為深度統一色 */
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        
-        /* 懸浮控制台 */
-        #admin-panel { 
-            background: rgba(25, 25, 25, 0.98); width: 100%; padding: 12px; 
-            border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-        .input-box { width: 100%; max-width: 400px; height: 40px; background: #333; border: 1px solid #555; color: #fff; border-radius: 6px; padding: 0 10px; font-size: 16px; text-align: center; margin-bottom: 10px; display: block; margin: 0 auto; }
-        .btn-row { display: flex; gap: 5px; width: 100%; max-width: 440px; margin: 0 auto; }
-        .btn { flex: 1; height: 44px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
-        .btn-blue { background: #34495e; }
-        .btn-green { background: #27ae60; }
-        .btn-orange { background: #d35400; }
-        .btn-gray { background: #7f8c8d; }
 
-        /* 縮放容器：確保報紙在畫面中央且完整 */
-        #newspaper-scaler {
-            padding-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            transform-origin: top center;
+        :root {
+            --paper: #e6dfd1;
+            --ink: #1a1a1a;
+            --accent: #8b0000;
         }
 
-        #capture-area { 
-            width: 420px; 
-            background-color: var(--paper); 
-            padding: 25px 25px 50px 25px; /* 增加底部填充 */
-            color: var(--ink); 
-            box-shadow: 0 0 30px rgba(0,0,0,0.5); 
+        body {
+            background-color: #121212;
+            margin: 0; padding: 0;
+            font-family: 'Noto Serif TC', serif;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* 編輯台：更洗鍊的設計 */
+        #editor-deck {
+            position: sticky; top: 0; z-index: 9999;
+            background: rgba(34, 34, 34, 0.95); width: 100%; padding: 10px 0;
+            color: #fff; text-align: center; border-bottom: 1px solid #333;
+            backdrop-filter: blur(5px);
+        }
+
+        .edit-viewport {
+            width: 140px; height: 180px; margin: 5px auto;
+            border: 1px solid rgba(255,255,255,0.3); position: relative;
+            overflow: hidden; background: #000; touch-action: none;
+            border-radius: 2px;
+        }
+
+        .sync-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; display: block; }
+
+        .btn {
+            background: var(--accent); color: #fff;
+            padding: 8px 20px; border: none; cursor: pointer;
+            font-weight: bold; margin: 5px; border-radius: 3px;
+            font-size: 0.9rem; letter-spacing: 1px;
+        }
+
+        /* 報紙主體：優化後的比例 */
+        #newspaper-output {
+            display: none; padding: 25px 0; width: 100%; justify-content: center;
+        }
+
+        #capture-area {
+            width: 350px;
+            background-color: var(--paper);
+            padding: 22px;
+            background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+            color: var(--ink);
             position: relative;
-            background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
-            min-height: 100%; 
         }
-        
-        header { border-top: 4px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; }
-        .newspaper-title { font-size: 3.2rem; font-weight: 900; letter-spacing: 8px; margin: 4px 0; }
-        
-        .layout-grid { display: flex; border-bottom: 2px solid var(--ink); padding-bottom: 15px; }
-        .left-col { width: 230px; padding-right: 12px; border-right: 1.2px solid var(--ink); }
-        .right-col { width: 140px; padding-left: 12px; text-align: center; }
-        
-        .quote-box { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 12px 0; padding: 10px; border: 1px dashed var(--ink); background: rgba(255,255,255,0.2); line-height: 1.6; min-height: 60px; display: flex; align-items: center; justify-content: center; }
 
-        .photo-box { 
-            width: 140px; height: 140px; border: 1.2px solid var(--ink); 
-            overflow: hidden; position: relative; background: #d0c8b8; 
-            margin: 0 auto; touch-action: none;
+        /* 報頭設計優化 */
+        header {
+            border-top: 4px solid var(--ink);
+            border-bottom: 1px solid var(--ink);
+            margin-bottom: 15px; padding: 10px 0 5px 0;
         }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
 
-        .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 10px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
-        .greet { font-size: 1.5rem; font-weight: 900; color: var(--accent); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 15px 0; }
-        .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.2); font-size: 0.75rem; text-align: left; margin-bottom: 10px; }
-        
-        /* 頁腳 */
-        .footer-info { margin-top: 20px; font-size: 0.6rem; text-align: center; opacity: 0.7; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; }
+        .masthead-top {
+            display: flex; justify-content: space-between;
+            font-size: 0.65rem; font-weight: 700; margin-bottom: 5px;
+        }
 
-        body.reader-mode { background: var(--paper); }
-        body.reader-mode #newspaper-scaler { padding-top: 0; }
-        body.reader-mode #capture-area { box-shadow: none; }
+        .newspaper-title {
+            font-size: 2.6rem; font-weight: 900; letter-spacing: 10px;
+            margin: 5px 0; text-align: center; line-height: 1;
+        }
+
+        .masthead-bottom {
+            border-top: 1px solid var(--ink);
+            display: flex; justify-content: space-between;
+            font-size: 0.7rem; padding: 5px 2px; font-weight: 700;
+        }
+
+        /* 內容區：專業對齊 */
+        .content-grid { display: flex; gap: 18px; align-items: flex-start; }
+
+        .vertical-text-col {
+            writing-mode: vertical-rl;
+            border-left: 1px solid rgba(0,0,0,0.2);
+            padding-left: 14px;
+            line-height: 2.1;
+            flex-grow: 1;
+            text-align: justify;
+        }
+
+        .headline-morning {
+            font-size: 1.8rem; font-weight: 900; color: var(--accent);
+            margin-left: 8px; line-height: 1.2;
+        }
+
+        .master-quote {
+            font-size: 1.15rem; font-weight: 700; letter-spacing: 1px;
+            color: #333; margin-left: 5px;
+        }
+
+        .news-snippet {
+            font-size: 0.75rem; color: #444; line-height: 1.8;
+            margin-top: 10px;
+        }
+
+        /* 照片區 */
+        .photo-sidebar { width: 135px; flex-shrink: 0; }
+
+        .photo-frame {
+            width: 135px; height: 175px;
+            border: 1px solid var(--ink);
+            overflow: hidden; position: relative; background: #fff;
+            filter: sepia(0.25) contrast(1.15) saturate(0.85);
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .weather-box {
+            margin-top: 12px; border: 1px solid rgba(0,0,0,0.1);
+            padding: 8px; font-size: 0.65rem; background: rgba(0,0,0,0.02);
+            line-height: 1.5;
+        }
+
+        /* 輸出預覽區 */
+        #result-preview {
+            display: none; text-align: center; padding: 20px 10px 50px 10px;
+        }
+        #result-preview img {
+            width: 100%; max-width: 350px;
+            border: 8px solid #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
     </style>
 </head>
 <body>
 
-    <div id="admin-panel">
-        <input type="text" id="in-cap" class="input-box" placeholder="輸入今日照片圖說..." oninput="syncPreview()">
-        <div class="btn-row">
-            <button class="btn btn-blue" onclick="document.getElementById('upload').click()">🖼️ 換照</button>
-            <button class="btn btn-green" id="pub-btn" onclick="uploadToGithub()">🚀 刊印</button>
-            <button class="btn btn-orange" onclick="copyAppUrl()">🔗 分享</button>
-            <button class="btn btn-gray" onclick="downloadNewspaper()">💾 下載</button>
+    <div id="editor-deck">
+        <div id="step-1">
+            <input type="file" id="upload" accept="image/*" style="display:none">
+            <button class="btn" onclick="document.getElementById('upload').click()">「 啟 動 刊 印 」</button>
         </div>
-        <input type="file" id="upload" accept="image/*" style="display:none">
+        <div id="step-2" style="display:none;">
+            <div class="edit-viewport" id="viewport">
+                <img id="raw-img" class="sync-img" src="">
+            </div>
+            <input type="range" id="zoom" min="0.1" max="3" step="0.01" style="width:140px;">
+            <div><button class="btn" onclick="publish()" id="pub-btn">「 確 認 出 版 」</button></div>
+        </div>
     </div>
 
-    <div id="newspaper-scaler">
+    <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:900;">
-                    <span id="lunar-date">歲次 乙巳年 十一月十九</span>
-                    <span id="solar-date">2026年1月7日</span>
+                <div class="masthead-top">
+                    <span>歲次 乙巳年 十一月十九</span>
+                    <span>二〇二六年一月七日</span>
                 </div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
+                <div class="masthead-bottom">
+                    <span>零售 肆圓</span>
+                    <span>今日號外</span>
+                    <span>北投特刊</span>
+                </div>
             </header>
-            
-            <div class="layout-grid">
-                <div class="left-col">
-                    <div style="font-size:1rem; border-bottom:2.5px solid var(--ink); margin-bottom:10px; font-weight:900;">今日頭條</div>
-                    <div id="news-list">新聞正在路上...</div>
-                    <div style="font-size:1rem; border-bottom:2.5px solid var(--ink); margin:20px 0 10px; font-weight:900;">全台氣象概況</div>
-                    <div id="city-weather-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;"></div>
-                </div>
 
-                <div class="right-col">
-                    <div class="weather-info">
-                        <div id="w-loc" style="font-weight:900; border-bottom:1.2px solid var(--ink); margin-bottom:5px; text-align:center;">📍 定位獲取中</div>
-                        <div style="display:flex; justify-content:space-between;"><span>天候</span><b id="w-desc">--</b></div>
-                        <div style="display:flex; justify-content:space-between;"><span>氣溫</span><b id="w-temp">--</b></div>
+            <div class="content-grid">
+                <section class="vertical-text-col">
+                    <div class="headline-morning">早安平安</div>
+                    <div class="master-quote" id="display-quote"></div>
+                    <div class="news-snippet">
+                        【本報快訊】強烈冷氣團發威，全台橙色低溫特報。北投清晨最低溫僅 8.9 度。
+                        國防部搜尋失聯機件任務持續。台股氣勢如虹，科技股領軍。
                     </div>
-                    
-                    <div class="quote-box" id="daily-quote">讀萬卷書，行萬里路。</div>
-                    
-                    <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src=""></div>
-                    <div id="out-cap" style="font-size:0.7rem; text-align:center; font-weight:bold; margin-top:6px; border:1px solid #999; padding:4px; background:rgba(255,255,255,0.3);">今日影像紀錄</div>
-                    
-                    <div class="greet" id="dynamic-greet">舒心·平安</div>
-                    <div class="footer-info">© 2026 白六日報 · 僅供私人閱讀</div>
-                </div>
+                </section>
+                <aside class="photo-sidebar">
+                    <div class="photo-frame">
+                        <img id="final-img" class="sync-img" src="">
+                    </div>
+                    <div class="weather-box">
+                        <strong>【各縣市氣象】</strong><br>
+                        台北 9° | 台中 11° | 高雄 14°<br>
+                        宜蘭 10° | 花蓮 14° | 澎湖 15°
+                    </div>
+                </aside>
             </div>
+            <footer style="margin-top:15px; text-align:center; font-size:0.5rem; border-top:1px solid rgba(0,0,0,0.1); padding-top:8px; opacity:0.6; letter-spacing:1px;">
+                𓃥 白六日報館 · 證嚴法師靜思語選錄
+            </footer>
         </div>
+    </div>
+
+    <div id="result-preview">
+        <p style="color:#aaa; font-size:0.8rem; margin-bottom:15px;">— 報紙已印製完成 —<br>長按下方圖片保存至手機</p>
+        <div id="image-container"></div>
+        <button class="btn" onclick="location.reload()" style="background:#333; margin-top:30px;">重新製作</button>
     </div>
 
     <script>
-        const TK = "ghp_CbTbFJpfe9j2u0ER" + "U80NwlkHv5NJVQ23vKXE";
-        const GH = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
-        const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
-
-        // 動態縮放：解決顯示不全與底部留白
-        function adjustScale() {
-            const container = document.getElementById('newspaper-scaler');
-            const paper = document.getElementById('capture-area');
-            const winW = window.innerWidth;
-            const paperW = 420;
-            const scale = (winW < paperW) ? (winW / paperW) : 1;
-            
-            container.style.transform = `scale(${scale})`;
-            // 縮放後，容器實際佔用高度會減少，需手動修正補償
-            container.style.height = (paper.offsetHeight * scale) + "px";
-        }
+        const upload = document.getElementById('upload');
+        const rawImg = document.getElementById('raw-img');
+        const finalImg = document.getElementById('final-img');
+        const zoom = document.getElementById('zoom');
+        const viewport = document.getElementById('viewport');
 
         const quotes = [
-            "「生活不是為了趕路，而是為了感受路上的風景。」",
-            "「願你眼裡有光，活成自己喜歡的模樣。」",
-            "「最美好的日子，是今天，最慈悲的時刻，是當下。」",
-            "「心若向陽，無畏傷悲。」",
-            "「白六日報：為您記錄平凡日子裡的閃光點。」"
+            "「口說好話，心想好意，身行好事。」", "「原諒別人，就是善待自己。」",
+            "「心美，看什麼都順眼。」", "「甘願做，歡喜受。」",
+            "「要用心，不要操心、煩心。」", "「太陽光大，父母恩大，君子量大。」",
+            "「微笑，是世界上最共通的語言。」"
         ];
 
-        window.onload = () => {
-            adjustScale();
-            document.getElementById('daily-quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
-            document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
-            
-            if (new URLSearchParams(window.location.search).get('view') === 'reader') {
-                document.getElementById('admin-panel').style.display = 'none';
-                document.body.classList.add('reader-mode');
-            }
+        let posX = 0, posY = 0, currentScale = 1;
+        let isDragging = false, startX, startY;
 
-            navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
-            
-            fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
-            .then(r => r.json()).then(d => {
-                document.getElementById('news-list').innerHTML = d.items.slice(0, 6).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
-                setTimeout(adjustScale, 500); // 確保新聞填入後再次校正高度
-            });
+        upload.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    rawImg.src = finalImg.src = ev.target.result;
+                    document.getElementById('step-1').style.display = 'none';
+                    document.getElementById('step-2').style.display = 'block';
+                    document.getElementById('display-quote').innerText = quotes[new Date().getDay()];
+                    rawImg.onload = () => {
+                        currentScale = 140 / rawImg.naturalWidth;
+                        zoom.value = currentScale;
+                        sync();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
         };
 
-        async function fetchWeather(lat = 25.03, lon = 121.56) {
-            try {
-                const g = await (await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`)).json();
-                document.getElementById('w-loc').innerText = `📍 ${g[0]?.local_names?.zh || g[0]?.name || "台北"}`;
-                const w = await (await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`)).json();
-                document.getElementById('w-desc').innerText = w.weather[0].description;
-                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C`;
-                const cities = [{n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"}];
-                document.getElementById('city-weather-grid').innerHTML = cities.map(c => `<div style="display:flex; justify-content:space-between; font-size:0.65rem; border-bottom:1px dotted #999; padding:2px 0;"><span>${c.n} ${c.s}</span><b>${Math.round(w.main.temp + Math.random()*2-1)}°</b></div>`).join('');
-            } catch(e) {}
+        function publish() {
+            const btn = document.getElementById('pub-btn');
+            btn.innerText = "印製中...";
+            btn.disabled = true;
+
+            const output = document.getElementById('newspaper-output');
+            output.style.display = 'flex';
+            sync();
+
+            setTimeout(() => {
+                html2canvas(document.getElementById('capture-area'), {
+                    useCORS: true,
+                    scale: 3, // 高解析度
+                    backgroundColor: "#e6dfd1"
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL("image/jpeg", 0.9);
+                    const imgElement = new Image();
+                    imgElement.src = imgData;
+                    
+                    document.getElementById('editor-deck').style.display = 'none';
+                    output.style.display = 'none';
+                    document.getElementById('result-preview').style.display = 'block';
+                    document.getElementById('image-container').appendChild(imgElement);
+                });
+            }, 600);
         }
 
-        // 照片編輯邏輯
-        let state = { x: 0, y: 0, s: 1, lastDist: 0 };
-        let touches = {};
-        const pBox = document.getElementById('p-box'), finalImg = document.getElementById('final-img');
-        function updateTransform() { finalImg.style.transform = `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.s})`; }
-        pBox.addEventListener('pointerdown', e => { touches[e.pointerId] = e; pBox.setPointerCapture(e.pointerId); });
-        pBox.addEventListener('pointermove', e => {
-            if (!touches[e.pointerId]) return;
-            touches[e.pointerId] = e;
-            const keys = Object.keys(touches);
-            if (keys.length === 1) { state.x += e.movementX; state.y += e.movementY; }
-            else if (keys.length === 2) {
-                const p1 = touches[keys[0]], p2 = touches[keys[1]];
-                const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
-                if (state.lastDist > 0) state.s *= (dist / state.lastDist);
-                state.lastDist = dist;
-            }
-            updateTransform();
-        });
-        pBox.addEventListener('pointerup', e => { delete touches[e.pointerId]; state.lastDist = 0; });
-        document.getElementById('upload').onchange = e => {
-            const reader = new FileReader();
-            reader.onload = ev => { finalImg.src = ev.target.result; state = {x:0,y:0,s:1,lastDist:0}; updateTransform(); };
-            reader.readAsDataURL(e.target.files[0]);
+        function sync() {
+            const transform = `translate(${posX}px, ${posY}px) scale(${currentScale})`;
+            rawImg.style.transform = finalImg.style.transform = transform;
+        }
+
+        // 手勢逻辑
+        const handleStart = (e) => {
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX - posX; startY = clientY - posY;
         };
-        
-        function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
-        function copyAppUrl() {
-            const url = window.location.href.split('?')[0] + "?view=reader";
-            const d = document.createElement("input"); document.body.appendChild(d); d.value = url; d.select(); document.execCommand("copy"); document.body.removeChild(d);
-            alert("✅ 閱讀連結已複製！");
-        }
-        async function uploadToGithub() {
-            const btn = document.getElementById('pub-btn'); btn.innerText = "⏳...";
-            const canvas = await html2canvas(pBox, { useCORS: true });
-            const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-            const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
-            const getRes = await fetch(url);
-            const sha = getRes.ok ? (await getRes.json()).sha : null;
-            await fetch(url, { method: "PUT", headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update", content: b64, sha }) });
-            alert("✅ 刊印成功！"); btn.innerHTML = "🚀 刊印";
-        }
-        async function downloadNewspaper() {
-            const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2 });
-            const link = document.createElement('a'); link.download = `White6Daily.jpg`; link.href = canvas.toDataURL("image/jpeg", 0.9); link.click();
-        }
-        window.onresize = adjustScale;
+        const handleMove = (e) => {
+            if (!isDragging) return;
+            if (e.touches) e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            posX = clientX - startX; posY = clientY - startY;
+            sync();
+        };
+
+        viewport.addEventListener('touchstart', handleStart);
+        viewport.addEventListener('touchmove', handleMove, { passive: false });
+        viewport.addEventListener('touchend', () => isDragging = false);
+        viewport.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', () => isDragging = false);
+        zoom.oninput = () => { currentScale = parseFloat(zoom.value); sync(); };
     </script>
 </body>
 </html>
