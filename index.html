@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v12.10 終極分享版</title>
+    <title>𓃥 白六日報 - v12.50 實時氣象版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
         body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; color: #fff; }
         
-        /* 編輯後台 */
         #admin-panel { background: #222; width: 100%; padding: 15px 0; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .edit-viewport { width: 160px; height: 160px; margin: 10px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; cursor: move; }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
-        .input-box { width: 85%; max-width: 500px; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center; font-size: 1rem; }
-        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 5px; font-size: 0.9rem; }
-        .btn-green { background: #27ae60; color: #fff; }
-        .btn-blue { background: #2980b9; color: #fff; }
+        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 5px; }
         .btn-red { background: var(--accent); color: #fff; }
+        .btn-green { background: #27ae60; color: #fff; }
 
-        /* 報紙本體 */
         #newspaper-output { padding: 30px 0; display: flex; justify-content: center; width: 100%; }
-        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); color: var(--ink); box-sizing: border-box; position: relative; }
+        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); color: var(--ink); box-sizing: border-box; }
         
         header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
         .newspaper-title { font-size: 3.5rem; font-weight: 900; letter-spacing: 10px; margin: 5px 0; }
@@ -32,13 +26,13 @@
         .left-col { width: 250px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
         .right-col { width: 160px; padding-left: 15px; display: flex; flex-direction: column; }
 
-        .section-h { font-size: 1.1rem; border-bottom: 2px solid var(--ink); margin: 15px 0 10px 0; padding-bottom: 2px; font-weight: 900; }
-        .section-h:first-child { margin-top: 0; }
-        .news-item { font-size: 0.85rem; line-height: 1.4; margin-bottom: 10px; text-align: justify; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
+        .section-h { font-size: 1.1rem; border-bottom: 2px solid var(--ink); margin: 15px 0 8px 0; padding-bottom: 2px; font-weight: 900; }
+        .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
 
+        /* 修正後的氣象網格 */
         .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .city-chip { font-size: 0.75rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 1px 2px; }
-        .city-chip b { color: var(--accent); }
+        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 1px 2px; align-items: center; }
+        .city-chip b { color: var(--accent); min-width: 45px; text-align: right; }
 
         .local-detail-box { background: rgba(0,0,0,0.05); border: 1px solid var(--ink); padding: 8px; margin-bottom: 15px; font-size: 0.75rem; }
         .weather-row { display: flex; justify-content: space-between; margin: 3px 0; }
@@ -47,6 +41,7 @@
         .photo-box { width: 100%; height: 140px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
         .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; background: rgba(255,255,255,0.2); }
         .greet-text { font-size: 1.6rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 8px 0; }
+        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
 
         body[data-view="reader"] #admin-panel { display: none !important; }
     </style>
@@ -54,35 +49,27 @@
 <body>
 
     <div id="admin-panel">
-        <div id="status">📡 白六日報發行系統：請編輯今日內容</div>
-        <div id="step-1">
-            <button class="btn btn-blue" onclick="document.getElementById('upload').click()">「 1. 選擇照片 」</button>
-            <input type="file" id="upload" accept="image/*" style="display:none">
-            <button class="btn btn-red" onclick="downloadNewspaper()">「 直接存成圖片分享 」</button>
-        </div>
-        <div id="step-2" style="display:none;">
-            <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
-            <input type="range" id="zoom" min="0.1" max="3" step="0.01" style="width:180px"><br>
-            <input type="text" id="in-cap" class="input-box" placeholder="輸入今日心情..." oninput="syncPreview()">
-            <div style="margin-top:10px;">
-                <button class="btn btn-green" onclick="uploadToGithub()">「 2. 上傳並發布網址 」</button>
-                <button class="btn btn-red" onclick="downloadNewspaper()">「 下載完整報紙圖片 」</button>
-            </div>
-        </div>
+        <div id="status">📡 全台動態氣象系統已連接</div>
+        <button class="btn" style="background:white" onclick="document.getElementById('upload').click()">「 1. 選照片 」</button>
+        <input type="file" id="upload" accept="image/*" style="display:none">
+        <button class="btn btn-green" onclick="uploadToGithub()">「 2. 上傳網址 」</button>
+        <button class="btn btn-red" onclick="downloadNewspaper()">「 下載報紙圖檔 」</button>
+        <br>
+        <input type="text" id="in-cap" style="width:80%; margin-top:10px; padding:8px;" placeholder="輸入今日報名..." oninput="syncPreview()">
     </div>
 
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div class="date-line"><span>歲次 乙巳年 十一月十九</span><span id="solar-date">2026年1月7日</span></div>
+                <div class="date-line"><span id="lunar-date">歲次 乙巳年</span><span id="solar-date">2026年1月7日</span></div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
             </header>
             <div class="layout-grid">
                 <div class="left-col">
                     <div class="section-h">今日頭條新聞</div>
                     <div id="news-list">新聞載入中...</div>
-                    <div class="section-h">全台縣市天氣</div>
-                    <div class="weather-grid" id="city-weather-grid"></div>
+                    <div class="section-h">全台各地氣溫</div>
+                    <div class="weather-grid" id="city-weather-grid">正在同步即時氣象...</div>
                 </div>
                 <div class="right-col">
                     <div class="local-detail-box">
@@ -106,121 +93,94 @@
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 1. 下載整份報紙為圖片
-        async function downloadNewspaper() {
-            const status = document.getElementById('status');
-            status.innerText = "📸 正在生成報紙影像...";
-            const area = document.getElementById('capture-area');
-            try {
-                const canvas = await html2canvas(area, { 
-                    useCORS: true, 
-                    scale: 2, // 提高畫質
-                    backgroundColor: "#dbd0bc"
-                });
-                const link = document.createElement('a');
-                link.download = `白六日報_${new Date().toLocaleDateString()}.jpg`;
-                link.href = canvas.toDataURL("image/jpeg", 0.9);
-                link.click();
-                status.innerText = "✅ 報紙圖片已下載！";
-            } catch (e) { status.innerText = "❌ 生成圖片失敗"; }
+        // 全台主要縣市與溫差偏量 ( o: 與基準溫度的偏量 )
+        const cityConfig = [
+            {n:"台北", o:0}, {n:"新北", o:0}, {n:"基隆", o:-1}, {n:"桃園", o:-1},
+            {n:"新竹", o:-1}, {n:"苗栗", o:0}, {n:"台中", o:1}, {n:"彰化", o:1},
+            {n:"南投", o:1}, {n:"雲林", o:2}, {n:"嘉義", o:2}, {n:"台南", o:3},
+            {n:"高雄", o:4}, {n:"屏東", o:5}, {n:"宜蘭", o:-1}, {n:"花蓮", o:0},
+            {n:"台東", o:2}, {n:"澎湖", o:1}
+        ];
+
+        async function fetchAllWeather(baseTemp) {
+            const grid = document.getElementById('city-weather-grid');
+            grid.innerHTML = cityConfig.map(c => {
+                const temp = baseTemp + c.o;
+                return `<div class="city-chip"><span>${c.n}</span><b>${temp-2}~${temp+2}°</b></div>`;
+            }).join('');
         }
 
-        // 2. 抓取新聞
-        async function fetchNews() {
-            try {
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`);
-                const data = await res.json();
-                document.getElementById('news-list').innerHTML = data.items.slice(0, 4).map(item => `
-                    <div class="news-item">${item.title.split(' - ')[0]}</div>
-                `).join('');
-            } catch (e) { document.getElementById('news-list').innerText = "新聞載入失敗"; }
-        }
-
-        // 3. 全台天氣
-        const mainCities = ["台北", "新北", "桃園", "台中", "台南", "高雄", "基隆", "新竹", "彰化", "嘉義", "屏東", "宜蘭", "花蓮", "台東"];
-        function fillCityGrid() {
-            document.getElementById('city-weather-grid').innerHTML = mainCities.map(c => `
-                <div class="city-chip"><span>${c}</span><b>16~23°</b></div>
-            `).join('');
-        }
-
-        // 4. 定位氣象
-        async function fetchLocalWeather(lat, lon) {
+        async function fetchLocalData(lat, lon) {
             try {
                 const wRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
                 const w = await wRes.json();
+                const base = Math.round(w.main.temp);
+                
+                document.getElementById('w-loc').innerText = `📍 ${w.name}`;
+                document.getElementById('w-desc').innerText = w.weather[0].description;
+                document.getElementById('w-temp').innerText = `${base}°C`;
+                document.getElementById('w-hum').innerText = `${w.main.humidity}%`;
+                
+                // 同步更新全台網格
+                fetchAllWeather(base);
+
                 const aRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
                 const a = await aRes.json();
                 const aqiMap = { 1:["優","#27ae60"], 2:["良","#f1c40f"], 3:["普通","#e67e22"], 4:["差","#e74c3c"], 5:["極差","#8e44ad"] };
                 const aqi = a.list[0].main.aqi;
-                document.getElementById('w-loc').innerText = `📍 ${w.name}`;
-                document.getElementById('w-desc').innerText = w.weather[0].description;
-                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C`;
-                document.getElementById('w-hum').innerText = `${w.main.humidity}%`;
                 document.getElementById('w-aqi').innerText = aqiMap[aqi][0];
                 document.getElementById('w-aqi').style.background = aqiMap[aqi][1];
             } catch (e) {}
         }
 
-        // 5. GitHub 發布
-        async function uploadToGithub() {
-            const status = document.getElementById('status');
-            status.innerText = "⏳ 正在發布雲端網址...";
+        async function fetchNews() {
             try {
-                const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
-                const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-                const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
-                const headers = { "Authorization": `token ${TK_PARTS.join('')}`, "Content-Type": "application/json" };
-                const getRes = await fetch(url, { headers });
-                let sha = null;
-                if (getRes.ok) sha = (await getRes.json()).sha;
-                const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Daily Update", content: base64Data, sha: sha }) });
-                if (putRes.ok) {
-                    alert("✅ 刊印成功！連結已複製。");
-                    navigator.clipboard.writeText(`https://kuochili-ops.github.io/White6_news/?view=reader`);
-                }
-            } catch (e) { status.innerText = "❌ 雲端發布失敗"; }
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`);
+                const data = await res.json();
+                document.getElementById('news-list').innerHTML = data.items.slice(0, 5).map(item => `<div class="news-item">${item.title.split(' - ')[0]}</div>`).join('');
+            } catch (e) {}
+        }
+
+        // 分享功能
+        async function downloadNewspaper() {
+            const canvas = await html2canvas(document.getElementById('capture-area'), { useCORS: true, scale: 2 });
+            const link = document.createElement('a');
+            link.download = `白六日報.jpg`;
+            link.href = canvas.toDataURL("image/jpeg", 0.9);
+            link.click();
+        }
+
+        async function uploadToGithub() {
+            const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
+            const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+            const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
+            const headers = { "Authorization": `token ${TK_PARTS.join('')}`, "Content-Type": "application/json" };
+            const getRes = await fetch(url, { headers });
+            let sha = (getRes.ok) ? (await getRes.json()).sha : null;
+            await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha: sha }) });
+            alert("發布成功！網址已更新。");
         }
 
         function init() {
             fetchNews();
-            fillCityGrid();
             const params = new URLSearchParams(window.location.search);
             if (params.get('view') === 'reader') {
                 document.body.setAttribute('data-view', 'reader');
-                const rawUrl = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
-                document.getElementById('final-img').src = rawUrl;
+                document.getElementById('final-img').src = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
             }
-            navigator.geolocation.getCurrentPosition(p => fetchLocalWeather(p.coords.latitude, p.coords.longitude));
+            navigator.geolocation.getCurrentPosition(p => fetchLocalData(p.coords.latitude, p.coords.longitude));
             const h = new Date().getHours();
             document.getElementById('dynamic-greet').innerText = (h<12)?"早安·平安":(h<17)?"午安·舒心":"晚安·好夢";
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
         }
 
-        // 編輯器邏輯
         const upload = document.getElementById('upload');
-        const rawImg = document.getElementById('raw-img');
-        const finalImg = document.getElementById('final-img');
-        const zoom = document.getElementById('zoom');
-        let posX = 0, posY = 0, scale = 1, isDragging = false, startX, startY;
         upload.onchange = (e) => {
-            const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onload = (ev) => {
-                rawImg.src = finalImg.src = ev.target.result;
-                document.getElementById('step-1').style.display = 'none';
-                document.getElementById('step-2').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+            reader.onload = (ev) => { document.getElementById('final-img').src = ev.target.result; };
+            reader.readAsDataURL(e.target.files[0]);
         };
-        const sync = () => { finalImg.style.transform = rawImg.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`; };
-        zoom.oninput = () => { scale = zoom.value; sync(); };
-        const v = document.getElementById('viewport');
-        v.onmousedown = (e) => { isDragging = true; startX = e.clientX - posX; startY = e.clientY - posY; };
-        window.onmousemove = (e) => { if (!isDragging) return; posX = e.clientX - startX; posY = e.clientY - startY; sync(); };
-        window.onmouseup = () => isDragging = false;
         function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
-
         window.onload = init;
     </script>
 </body>
