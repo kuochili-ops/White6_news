@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v19.0</title>
+    <title>𓃥 白六日報 - v19.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -39,7 +39,6 @@
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); padding: 8px 0; margin: 15px 0; }
         .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); font-size: 0.75rem; text-align: left; margin-bottom: 12px; line-height: 1.6; }
         
-        /* 方形紅色外框廣告 */
         .ad-box { margin-top: 25px; border: 2px solid var(--red); padding: 6px; color: var(--red); font-weight: 900; font-size: 0.75rem; position: relative; display: inline-block; width: 100%; }
         .ad-box::before { content: "廣告刊登"; display: block; border-bottom: 1px solid var(--red); margin-bottom: 4px; font-size: 0.85rem; }
         .ad-box span { letter-spacing: 2px; }
@@ -50,7 +49,7 @@
 <body>
 
     <div id="admin-panel">
-        <input type="text" id="in-cap" class="input-box" placeholder="寫點什麼作為圖說..." oninput="syncPreview()">
+        <input type="text" id="in-cap" class="input-box" placeholder="輸入今日照片敘述..." oninput="syncPreview()">
         <div class="btn-row">
             <button class="btn btn-blue" onclick="document.getElementById('upload').click()">🖼️ 換照</button>
             <button class="btn btn-green" id="pub-btn" onclick="uploadToGithub()">🚀 刊印</button>
@@ -65,7 +64,7 @@
             <header>
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:900;">
                     <span id="lunar-date">歲次 乙巳年 十一月十九</span>
-                    <span id="solar-date">2026年1月7日</span>
+                    <span id="solar-date">2026年1月8日</span>
                 </div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
             </header>
@@ -88,14 +87,11 @@
                     
                     <div class="quote-box" id="daily-quote">...</div>
                     
-                    <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src=""></div>
+                    <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src="" crossorigin="anonymous"></div>
                     <div id="out-cap" style="font-size:0.75rem; text-align:center; font-weight:bold; margin-top:8px; border:1px solid #999; padding:5px;">今日影像紀錄</div>
                     
                     <div class="greet" id="dynamic-greet">舒心·平安</div>
-                    
-                    <div class="ad-box">
-                        <span>◆ 效果宏大 ◆</span>
-                    </div>
+                    <div class="ad-box"><span>◆ 效果宏大 ◆</span></div>
                 </div>
             </div>
         </div>
@@ -113,7 +109,6 @@
             paper.style.transform = (winW < paperW) ? `scale(${winW / paperW})` : "none";
         }
 
-        // 智能問候邏輯
         function updateGreeting() {
             const hour = new Date().getHours();
             let msg = "舒心·平安";
@@ -125,20 +120,22 @@
             document.getElementById('dynamic-greet').innerText = msg;
         }
 
-        const quotes = [
-            "「願你眼裡有光，活成自己喜歡的模樣。」",
-            "「歲月靜好，是因為有人在為你負重前行。」",
-            "「心若向陽，無畏傷悲。」",
-            "「生活不是趕路，而是感受路上的風景。」"
-        ];
-
         window.onload = () => {
             adjustScale();
             updateGreeting();
-            document.getElementById('daily-quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
+            document.getElementById('daily-quote').innerText = "「願你眼裡有光，活成自己喜歡的模樣。」";
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
             
-            if (new URLSearchParams(window.location.search).get('view') === 'reader') document.body.classList.add('reader-mode');
+            // 讀者模式邏輯：強制載入 GitHub 上的合成圖
+            if (new URLSearchParams(window.location.search).get('view') === 'reader') {
+                document.body.classList.add('reader-mode');
+                const githubImgUrl = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/main/${GH.path}?t=${new Date().getTime()}`;
+                const img = document.getElementById('final-img');
+                img.src = githubImgUrl;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.transform = "translate(-50%, -50%) scale(1)"; // 讀者端不再需要 transform，因為上傳時已合成
+            }
 
             navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
             
@@ -150,26 +147,21 @@
 
         async function fetchWeather(lat = 25.03, lon = 121.56) {
             try {
-                // 1. 基本天氣與濕度
                 const wReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
                 const w = await wReq.json();
-                
-                // 2. 空氣品質 (AQI)
                 const aReq = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
                 const a = await aReq.json();
                 const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
-
                 document.getElementById('w-loc').innerText = `📍 ${w.name}`;
                 document.getElementById('w-desc').innerText = w.weather[0].description;
                 document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C / ${w.main.humidity}%`;
                 document.getElementById('w-aqi').innerText = aqiMap[a.list[0].main.aqi] || "普通";
-
                 const cities = [{n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"}];
                 document.getElementById('city-weather-grid').innerHTML = cities.map(c => `<div style="display:flex; justify-content:space-between; font-size:0.75rem; border-bottom:1px dotted #999; padding:2px 0;"><span>${c.n} ${c.s}</span><b>${Math.round(w.main.temp + Math.random()*2-1)}°</b></div>`).join('');
             } catch(e) {}
         }
 
-        // 照片操作
+        // 照片編輯邏輯
         let state = { x: 0, y: 0, s: 1, lastDist: 0 };
         let touches = {};
         const pBox = document.getElementById('p-box'), finalImg = document.getElementById('final-img');
@@ -194,21 +186,35 @@
             reader.onload = ev => { finalImg.src = ev.target.result; state = {x:0,y:0,s:1,lastDist:0}; updateTransform(); };
             reader.readAsDataURL(e.target.files[0]);
         };
+
+        async function uploadToGithub() {
+            const btn = document.getElementById('pub-btn'); btn.innerText = "⏳ 合成中...";
+            try {
+                // 重點：利用 html2canvas 將整個照片容器「拍下來」變成一張圖，這樣位移和縮放就被固定住了
+                const canvas = await html2canvas(pBox, { useCORS: true, backgroundColor: null, scale: 2 });
+                const b64 = canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
+                
+                const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+                const getRes = await fetch(url);
+                const sha = getRes.ok ? (await getRes.json()).sha : null;
+                
+                await fetch(url, { 
+                    method: "PUT", 
+                    headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" }, 
+                    body: JSON.stringify({ message: "Update Composite Photo", content: b64, sha }) 
+                });
+                alert("✅ 刊印成功！收訊者將看到您調整好的畫面。");
+            } catch (err) {
+                alert("❌ 刊印失敗：" + err.message);
+            }
+            btn.innerHTML = "🚀 刊印";
+        }
+
         function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
         function copyAppUrl() {
             const url = window.location.href.split('?')[0] + "?view=reader";
             const d = document.createElement("input"); document.body.appendChild(d); d.value = url; d.select(); document.execCommand("copy"); document.body.removeChild(d);
-            alert("✅ 連結已複製！");
-        }
-        async function uploadToGithub() {
-            const btn = document.getElementById('pub-btn'); btn.innerText = "⏳...";
-            const canvas = await html2canvas(pBox, { useCORS: true });
-            const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-            const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
-            const getRes = await fetch(url);
-            const sha = getRes.ok ? (await getRes.json()).sha : null;
-            await fetch(url, { method: "PUT", headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" }, body: JSON.stringify({ message: "Update", content: b64, sha }) });
-            alert("✅ 刊印成功！"); btn.innerHTML = "🚀 刊印";
+            alert("✅ 讀者連結已複製！");
         }
         async function downloadNewspaper() {
             const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2 });
