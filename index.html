@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v10.0 定位版</title>
+    <title>𓃥 白六日報 - v10.1 寬欄版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -21,7 +21,7 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 編輯台 */
+        /* 編輯台控制 */
         #editor-deck {
             position: sticky; top: 0; z-index: 9999;
             background: #222; width: 100%; padding: 10px 0;
@@ -42,15 +42,15 @@
             font-weight: bold; margin: 5px; border-radius: 4px;
         }
 
-        /* 報紙主體 */
+        /* 報紙內容主體 */
         #newspaper-output {
             display: none; padding: 20px 0; width: 100%; justify-content: center;
         }
 
         #capture-area {
-            width: 360px;
+            width: 400px; /* 稍微加大整體寬度，給予左欄更多發揮空間 */
             background-color: var(--paper);
-            padding: 18px;
+            padding: 20px;
             background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
             color: var(--ink);
             box-sizing: border-box;
@@ -59,88 +59,88 @@
         header {
             border-top: 4px solid var(--ink);
             border-bottom: 1.5px solid var(--ink);
-            margin-bottom: 12px; text-align: center;
+            margin-bottom: 15px; text-align: center;
         }
 
         .newspaper-title {
-            font-size: 2.8rem; font-weight: 900; letter-spacing: 10px;
+            font-size: 3rem; font-weight: 900; letter-spacing: 12px;
             margin: 5px 0; line-height: 1;
         }
 
         /* 左右分欄 Grid */
         .newspaper-grid {
             display: grid;
-            grid-template-columns: 1fr 140px; /* 左側新聞 : 右側固定欄 */
-            gap: 12px;
-            min-height: 420px;
+            grid-template-columns: 1fr 150px; /* 左側新聞佔據剩餘大空間 : 右側固定欄 */
+            gap: 15px;
+            min-height: 450px;
         }
 
-        /* 右側欄排版 */
+        /* 右側欄：照片/標題/天氣 */
         .right-column {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            border-left: 1px solid rgba(0,0,0,0.15);
-            padding-left: 10px;
+            gap: 12px;
+            border-left: 1.5px solid var(--ink);
+            padding-left: 15px;
         }
 
         .photo-frame {
-            width: 140px; height: 180px; border: 1px solid var(--ink);
+            width: 135px; height: 175px; border: 1px solid var(--ink);
             overflow: hidden; position: relative; background: #fff;
+            filter: sepia(0.15) contrast(1.1);
         }
 
         .morning-title {
-            font-size: 1.6rem; font-weight: 900; color: var(--accent);
-            text-align: center; line-height: 1; margin: 5px 0;
+            font-size: 1.8rem; font-weight: 900; color: var(--accent);
+            text-align: center; line-height: 1.1;
         }
 
         .daily-quote {
-            font-size: 0.95rem; font-weight: 700; line-height: 1.4;
-            padding: 5px; background: rgba(0,0,0,0.03); border-radius: 2px;
+            font-size: 1rem; font-weight: 700; line-height: 1.5;
+            padding: 8px; border: 1px dashed rgba(0,0,0,0.1);
         }
 
         .weather-info {
-            font-size: 0.65rem; line-height: 1.5;
-            border-top: 1px dashed var(--ink); padding-top: 8px;
+            font-size: 0.7rem; line-height: 1.6;
+            border-top: 1px solid var(--ink); padding-top: 8px;
         }
 
-        /* 左側直排新聞區 */
+        /* 左側欄：三欄直排新聞，寬度加大 */
         .left-column-news {
             writing-mode: vertical-rl;
             display: flex;
-            flex-direction: row; /* 在直排中代表欄位橫向並排 */
-            gap: 12px;
+            flex-direction: row; 
+            gap: 25px; /* 加大欄與欄之間的間隔 */
         }
 
         .news-col {
-            width: 100%;
-            height: 100%;
+            flex-grow: 1; /* 讓每一欄自動分配剩餘寬度 */
             text-align: justify;
-            font-size: 0.8rem;
-            line-height: 2.2;
-            padding: 0 4px;
+            font-size: 0.9rem; /* 稍微加大內文字體提升可讀性 */
+            line-height: 2.4;  /* 增加列距，讓版面不擁擠 */
+            padding: 0 5px;
         }
 
         .col-border { border-left: 1px solid rgba(0,0,0,0.1); }
 
         .news-label {
-            display: inline-block;
             background: var(--ink); color: var(--paper);
-            padding: 4px 2px; margin-bottom: 8px;
-            font-size: 0.65rem; font-weight: bold;
-            writing-mode: horizontal-tb; /* 標籤橫寫增加視覺焦點 */
+            padding: 6px 3px; margin-bottom: 12px;
+            font-size: 0.75rem; font-weight: bold;
+            writing-mode: horizontal-tb;
+            display: inline-block;
         }
 
-        /* 下方廣告欄位 */
+        /* 底部廣告位 */
         .ad-section {
-            margin-top: 15px; border: 2px solid var(--ink);
-            padding: 8px; text-align: center;
+            margin-top: 20px; border: 3px double var(--ink);
+            padding: 10px; text-align: center;
         }
-        .ad-section b { display: block; font-size: 1.1rem; color: var(--accent); letter-spacing: 2px; }
-        .ad-section span { font-size: 0.75rem; color: #444; }
+        .ad-section b { display: block; font-size: 1.2rem; color: var(--accent); letter-spacing: 5px; }
+        .ad-section span { font-size: 0.8rem; font-weight: bold; margin-top: 5px; display: block; }
 
         #result-preview { display: none; text-align: center; padding: 20px; }
-        #result-preview img { width: 100%; max-width: 360px; border: 10px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #result-preview img { width: 100%; max-width: 400px; border: 10px solid #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -162,12 +162,12 @@
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; font-weight:bold; margin-bottom:2px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; margin-bottom:4px;">
                     <span>歲次 乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; border-top:1px solid var(--ink); padding:4px 0; font-weight:bold;">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; border-top:1.5px solid var(--ink); padding:5px 0; font-weight:bold;">
                     <span>零售 肆圓</span>
                     <span>今日號外</span>
                     <span>北投特刊</span>
@@ -178,15 +178,15 @@
                 <div class="left-column-news">
                     <div class="news-col">
                         <span class="news-label">氣象特報</span>
-                        強烈冷氣團來襲，氣象局發布低溫橙色特報。北投清晨最低溫僅 8.9 度，民眾應加強保暖。合歡山區有降雪機率，請用路人注意路面結冰。
+                        強烈冷氣團來襲，氣象局發布低溫橙色特報。北投清晨最低溫僅 8.9 度，民眾應加強保暖。合歡山區有降雪機率，請用路人注意路面結冰，行車務必小心。
                     </div>
                     <div class="news-col col-border">
                         <span class="news-label">即時新聞</span>
-                        今日台股氣勢如虹，AI 科技股領軍強攻。國防部搜尋失聯機件任務進入第三天，目前已縮定特定海域進行深度探測，集氣祈福平安。
+                        今日台股氣勢如虹，AI 科技股領軍強攻。國防部搜尋失聯機件任務進入第三天，目前已縮定特定海域進行深度探測，各界集氣祈福，盼傳回平安佳音。
                     </div>
                     <div class="news-col col-border">
                         <span class="news-label">全球焦點</span>
-                        線上即時新聞關注全球局勢變化，通訊軟體安全防護成焦點。最新環境保護法案今日三讀通過，將對未來再生能源產業產生深遠影響。
+                        線上即時新聞關注全球局勢變化。最新環境保護法案今日三讀通過，將對未來再生能源產業產生深遠影響，各產業專家對此表示樂觀預期。
                     </div>
                 </div>
 
@@ -209,14 +209,14 @@
                 <span>意者請洽：chilikuo@gmail.com</span>
             </div>
 
-            <footer style="margin-top:12px; text-align:center; font-size:0.5rem; opacity:0.6; border-top:1px solid rgba(0,0,0,0.1); padding-top:6px;">
+            <footer style="margin-top:15px; text-align:center; font-size:0.6rem; opacity:0.7; border-top:1px solid rgba(0,0,0,0.1); padding-top:8px;">
                 𓃥 白六日報館 · 證嚴法師靜思語選錄
             </footer>
         </div>
     </div>
 
     <div id="result-preview">
-        <p style="color:#ccc;">印製完成。長按圖片保存</p>
+        <p style="color:#ccc;">製作成功！長按圖片保存</p>
         <div id="image-container"></div>
         <button class="btn" onclick="location.reload()" style="background:#444; margin-top:20px;">重新製作</button>
     </div>
