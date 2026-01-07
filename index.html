@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v10.80 全台詳報版</title>
+    <title>𓃥 白六日報 - v10.90 雙格式出版中心</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
 
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; color: #fff; }
+        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; color: #fff; overflow-x: hidden; }
         
         /* 編輯後台介面 */
-        #admin-panel { background: #222; width: 100%; padding: 15px 0; text-align: center; border-bottom: 2px solid var(--accent); }
+        #admin-panel { background: #222; width: 100%; padding: 15px 0; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
         .edit-viewport { width: 160px; height: 160px; margin: 10px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; cursor: move; }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
-        .input-box { width: 85%; max-width: 500px; padding: 8px; margin: 4px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; font-size: 0.9rem; }
-        .btn { background: var(--accent); color: #fff; padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 5px; }
+        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
+        .input-box { width: 85%; max-width: 500px; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; font-size: 0.9rem; }
+        .btn-group { margin-top: 10px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; font-size: 0.85rem; }
+        .btn-jpg { background: #e67e22; color: #fff; } /* 橘色代表圖片 */
+        .btn-html { background: #27ae60; color: #fff; } /* 綠色代表互動網頁 */
 
         /* 報紙本體 */
-        #newspaper-output { padding: 30px 0; display: flex; justify-content: center; background: #1a1a1a; width: 100%; }
+        #newspaper-output { padding: 30px 0; display: flex; justify-content: center; width: 100%; }
         #capture-area {
             width: 440px; background-color: var(--paper); padding: 25px;
             background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
             color: var(--ink); box-sizing: border-box; overflow: hidden; position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
         #capture-area::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent); }
 
@@ -32,170 +34,119 @@
         .newspaper-title { font-size: 3.5rem; font-weight: 900; letter-spacing: 10px; margin: 5px 0; }
         .date-line { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 900; }
 
-        .layout-grid { display: flex; gap: 0; min-height: 600px; border-bottom: 2.5px solid var(--ink); padding-bottom: 15px; }
+        .layout-grid { display: flex; min-height: 600px; border-bottom: 2.5px solid var(--ink); padding-bottom: 15px; }
         .left-col { width: 280px; display: flex; flex-direction: column; gap: 15px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
         .right-col { width: 140px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; padding-left: 15px; }
 
         .item-tag { background: var(--ink); color: var(--paper); padding: 2px 10px; font-size: 0.8rem; font-weight: 900; display: inline-block; margin-bottom: 5px; }
         .item-body { font-size: 1rem; line-height: 1.7; text-align: justify; }
 
-        /* 詳細天氣預報區塊 */
-        .weather-grid-box { border: 1.5px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.15); margin: 5px 0; }
-        .weather-grid-box h4 { font-size: 0.75rem; margin: 0 0 6px 0; color: var(--accent); text-align: center; border-bottom: 1px solid var(--ink); letter-spacing: 2px; }
-        .region-group { margin-bottom: 8px; }
-        .region-label { font-size: 0.65rem; font-weight: 900; background: var(--ink); color: var(--paper); padding: 0 5px; display: inline-block; margin-bottom: 3px; }
-        .weather-flex { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.7rem; }
-        .weather-chip { flex: 1 1 30%; display: flex; justify-content: space-between; border-bottom: 0.5px dotted #666; padding: 1px 0; }
-        .weather-chip i { font-style: normal; margin-right: 2px; color: #444; }
+        /* 天氣預報區塊 */
+        .weather-grid-box { border: 1.5px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); margin: 5px 0; }
+        .weather-grid-box h4 { font-size: 0.75rem; margin: 0 0 6px 0; color: var(--accent); text-align: center; border-bottom: 1px solid var(--ink); }
+        .region-group { margin-bottom: 6px; }
+        .region-label { font-size: 0.6rem; font-weight: 900; background: var(--ink); color: var(--paper); padding: 0 4px; display: inline-block; }
+        .weather-flex { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.65rem; margin-top: 2px; }
+        .weather-chip { flex: 1 1 30%; display: flex; justify-content: space-between; border-bottom: 0.5px dotted #666; }
 
         .photo-box { width: 100%; height: 140px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #fff; }
         .photo-cap { font-size: 0.7rem; text-align: center; font-weight: bold; margin-top: 4px; border-bottom: 1px solid #aaa; padding-bottom: 4px; }
         .greet-text { font-size: 1.8rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 5px 0; }
-        .quote-style { font-size: 0.85rem; font-weight: 700; line-height: 1.6; padding: 10px; border: 1px dashed var(--ink); background: rgba(255,255,255,0.1); }
+        .quote-style { font-size: 0.85rem; font-weight: 700; line-height: 1.6; padding: 10px; border: 1px dashed var(--ink); }
 
         .local-weather-box { border: 1.5px solid var(--ink); margin-top: auto; background: #fdfaf5; padding: 4px; }
-        .local-weather-box h5 { font-size: 0.7rem; margin: 0; text-align: center; background: var(--ink); color: var(--paper); padding: 2px 0; }
-        .local-main { font-size: 1.25rem; font-weight: 900; text-align: center; padding: 6px 0; color: var(--accent); }
-        .local-sub { font-size: 0.65rem; display: flex; justify-content: space-between; border-top: 1px double var(--ink); padding-top: 4px; }
+        .local-weather-box h5 { font-size: 0.65rem; margin: 0; text-align: center; background: var(--ink); color: var(--paper); }
+        .local-main { font-size: 1.25rem; font-weight: 900; text-align: center; padding: 4px 0; color: var(--accent); }
 
-        .footer-ad { margin-top: 20px; border: 4px double var(--ink); padding: 10px; text-align: center; font-size: 1rem; font-weight: bold; letter-spacing: 2px; }
+        .footer-ad { margin-top: 20px; border: 4px double var(--ink); padding: 10px; text-align: center; font-size: 1rem; font-weight: bold; }
 
-        /* 讀者模式樣式 */
-        .reader-mode #admin-panel { display: none !important; }
-        .reader-mode #newspaper-output { padding: 0 !important; background: var(--paper) !important; }
-        .reader-mode #capture-area { box-shadow: none !important; width: 100vw; min-height: 100vh; border: none; }
+        /* 讀者模式（收訊者）專用：完全隱藏操作介面 */
+        body.is-reader #admin-panel { display: none !important; }
+        body.is-reader #newspaper-output { padding: 0 !important; background: var(--paper) !important; }
+        body.is-reader #capture-area { width: 100vw; min-height: 100vh; box-shadow: none !important; }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <div id="status" style="font-size: 0.7rem; color: #00ffcc; margin-bottom: 5px;">📡 編輯總部：全台縣市數據已連線</div>
+        <div id="status" style="font-size: 0.7rem; color: #00ffcc; margin-bottom: 5px;">📡 雙模出版系統已就緒</div>
         <div id="step-1">
             <input type="file" id="upload" accept="image/*" style="display:none">
-            <button class="btn" onclick="document.getElementById('upload').click()">「 啟 動 刊 印 」</button>
+            <button class="btn" style="background:white; color:#000" onclick="document.getElementById('upload').click()">「 啟 動 刊 印 」</button>
         </div>
         <div id="step-2" style="display:none;">
             <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
             <input type="range" id="zoom" min="0.1" max="3" step="0.01" style="width:180px">
             <div id="inputs">
-                <input type="text" id="in-cap" class="input-box" placeholder="輸入照片說明（如：今日之美...）">
+                <input type="text" id="in-cap" class="input-box" placeholder="輸入照片說明...">
             </div>
-            <button class="btn" onclick="exportHTML()">「 生成純淨分享版 HTML 」</button>
+            <div class="btn-group">
+                <button class="btn btn-jpg" onclick="exportJPG()">出版 JPG 圖片</button>
+                <button class="btn btn-html" onclick="exportHTML()">導出 HTML 分享檔</button>
+            </div>
         </div>
     </div>
 
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div class="date-line">
-                    <span id="lunar-date">歲次 乙巳年 十一月十九</span>
-                    <span>2026年1月7日</span>
-                </div>
+                <div class="date-line"><span>歲次 乙巳年 十一月十九</span><span>2026年1月7日</span></div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
             </header>
-
             <div class="layout-grid">
                 <div class="left-col">
                     <div class="news-item">
                         <div class="item-tag">在地氣象特報</div>
-                        <div class="item-body" id="out-n1">正在同步定位數據...</div>
+                        <div class="item-body" id="out-n1">正在讀取定位數據...</div>
                     </div>
-
                     <div class="weather-grid-box">
-                        <h4>【 全 台 縣 市 氣 象 精 報 】</h4>
-                        
-                        <div class="region-group">
-                            <span class="region-label">北部地區</span>
-                            <div class="weather-flex">
-                                <div class="weather-chip"><span><i>☁</i>台北</span><b>12-16</b></div>
-                                <div class="weather-chip"><span><i>☁</i>新北</span><b>12-16</b></div>
-                                <div class="weather-chip"><span><i>☂</i>基隆</span><b>11-14</b></div>
-                                <div class="weather-chip"><span><i>☁</i>桃園</span><b>12-17</b></div>
-                            </div>
-                        </div>
-
-                        <div class="region-group">
-                            <span class="region-label">中部地區</span>
-                            <div class="weather-flex">
-                                <div class="weather-chip"><span><i>☀</i>台中</span><b>14-22</b></div>
-                                <div class="weather-chip"><span><i>☀</i>彰化</span><b>14-21</b></div>
-                                <div class="weather-chip"><span><i>☀</i>雲林</span><b>13-22</b></div>
-                            </div>
-                        </div>
-
-                        <div class="region-group">
-                            <span class="region-label">南部地區</span>
-                            <div class="weather-flex">
-                                <div class="weather-chip"><span><i>☀</i>嘉義</span><b>13-23</b></div>
-                                <div class="weather-chip"><span><i>☀</i>台南</span><b>15-24</b></div>
-                                <div class="weather-chip"><span><i>☀</i>高雄</span><b>16-25</b></div>
-                            </div>
-                        </div>
-
-                        <div class="region-group">
-                            <span class="region-label">東部與外島</span>
-                            <div class="weather-flex">
-                                <div class="weather-chip"><span><i>☂</i>宜蘭</span><b>12-15</b></div>
-                                <div class="weather-chip"><span><i>☁</i>花蓮</span><b>14-19</b></div>
-                                <div class="weather-chip"><span><i>☁</i>台東</span><b>16-21</b></div>
-                            </div>
-                        </div>
+                        <h4>【 全 台 縣 市 氣 象 】</h4>
+                        <div class="region-group"><span class="region-label">北部</span><div class="weather-flex"><div class="weather-chip"><span>台北</span><b>12-16</b></div><div class="weather-chip"><span>新北</span><b>12-16</b></div><div class="weather-chip"><span>桃園</span><b>12-17</b></div></div></div>
+                        <div class="region-group"><span class="region-label">中部</span><div class="weather-flex"><div class="weather-chip"><span>台中</span><b>14-22</b></div><div class="weather-chip"><span>彰化</span><b>14-21</b></div><div class="weather-chip"><span>南投</span><b>13-22</b></div></div></div>
+                        <div class="region-group"><span class="region-label">南部</span><div class="weather-flex"><div class="weather-chip"><span>台南</span><b>15-24</b></div><div class="weather-chip"><span>高雄</span><b>16-25</b></div><div class="weather-chip"><span>屏東</span><b>17-26</b></div></div></div>
+                        <div class="region-group"><span class="region-label">東部</span><div class="weather-flex"><div class="weather-chip"><span>宜蘭</span><b>12-15</b></div><div class="weather-chip"><span>花蓮</span><b>14-19</b></div><div class="weather-chip"><span>台東</span><b>16-21</b></div></div></div>
                     </div>
-
                     <div class="news-item">
                         <div class="item-tag">即時焦點</div>
-                        <div class="item-body" id="out-n2">正在抓取今日全球即時新聞頭條...</div>
+                        <div class="item-body" id="out-n2">正在連線即時新聞...</div>
                     </div>
                 </div>
-
                 <div class="right-col">
                     <div class="photo-box"><img id="final-img" class="sync-img" src=""></div>
-                    <div class="photo-cap" id="out-cap">今日白六日報影像</div>
+                    <div class="photo-cap" id="out-cap">今日影像紀錄</div>
                     <div class="greet-text">早安·平安</div>
-                    <div class="quote-style" id="display-quote">「甘願做，歡喜受。」</div>
-                    
+                    <div class="quote-style" id="display-quote">「心美，看什麼都順眼。」</div>
                     <div class="local-weather-box">
-                        <h5>本報特稿：讀者定位</h5>
+                        <h5>本報特稿：即時定位</h5>
                         <div class="local-main" id="local-temp">14°C</div>
-                        <div class="local-sub">
-                            <span>濕度 <b id="w-hum">60%</b></span>
-                            <span>空品 <b id="w-aqi">良好</b></span>
-                        </div>
                     </div>
                 </div>
             </div>
-
             <div class="footer-ad">廣 告 招 租 ‧ 效 果 宏 大</div>
         </div>
     </div>
 
     <script>
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
-        const quotes = ["「口說好話，心想好意，身行好事。」", "「原諒別人，就是善待自己。」", "「心美，看什麼都順眼。」", "「甘願做，歡喜受。」", "「手心向下是助人，手心向上是求人。」", "「對人要寬心，說話要細心。」", "「成全別人，就是成就自己。」"];
-
-        // 讀者模式偵測
-        if (window.location.search.includes('mode=read') || window.name === 'reader') {
-            document.body.classList.add('reader-mode');
+        
+        // 判斷是否為收訊者打開的檔案
+        if (window.name === "white6_reader") {
+            document.body.classList.add('is-reader');
         }
 
-        async function initLiveContent() {
+        async function initLive() {
             // 抓即時新聞
             try {
                 const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://news.google.com/rss?hl=zh-TW&gl=TW&ceid=TW:zh-Hant')}`);
                 const data = await res.json();
-                if(data.items) {
-                    const news = data.items.slice(0, 2).map(i => i.title.split(' - ')[0]).join('。');
-                    document.getElementById('out-n2').innerText = `【今日頭條】${news}。全台各地應留意最新政經發展與氣候變化。`;
-                }
-            } catch(e) { document.getElementById('out-n2').innerText = "【今日焦點】本報與全球通訊社連線中，目前各項數據正常。"; }
+                document.getElementById('out-n2').innerText = `【今日頭條】${data.items[0].title.split(' - ')[0]}。${data.items[1].title.split(' - ')[0]}。`;
+            } catch(e) { document.getElementById('out-n2').innerText = "【今日焦點】全台氣候觀測站數據更新，請民眾注意早晚溫差變化。"; }
 
             // 抓定位天氣
             navigator.geolocation.getCurrentPosition(
                 async (p) => updateWeather(p.coords.latitude, p.coords.longitude, "目前位置"),
                 () => updateWeather() // 預設台北
             );
-
-            document.getElementById('display-quote').innerText = quotes[new Date().getDate() % quotes.length];
         }
 
         async function updateWeather(lat = 25.03, lon = 121.56, name = "台北市") {
@@ -203,19 +154,17 @@
                 const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
                 const d = await res.json();
                 document.getElementById('local-temp').innerText = `${name} ${Math.round(d.main.temp)}°C`;
-                document.getElementById('w-hum').innerText = `${d.main.humidity}%`;
-                document.getElementById('out-n1').innerText = `【${name}特報】本報偵測您位於${name}。當前天候${d.weather[0].description}，濕度約${d.main.humidity}%。請收訊者注意個人健康管理。`;
+                document.getElementById('out-n1').innerText = `【${name}特報】本報偵測您目前在${name}。受大氣影響，當地天候為${d.weather[0].description}。請當地讀者多加留意。`;
             } catch(e) {}
         }
 
-        window.onload = initLiveContent;
+        window.onload = initLive;
 
         // 編輯器邏輯
         const upload = document.getElementById('upload');
         const rawImg = document.getElementById('raw-img');
         const finalImg = document.getElementById('final-img');
         const zoom = document.getElementById('zoom');
-        const viewport = document.getElementById('viewport');
         let posX = 0, posY = 0, scale = 1, isDragging = false, startX, startY;
 
         upload.onchange = (e) => {
@@ -229,43 +178,44 @@
             reader.readAsDataURL(file);
         };
 
+        // 【分享方式 1：出版 JPG】
+        function exportJPG() {
+            document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄";
+            // 使用 html2canvas 渲染
+            html2canvas(document.getElementById('capture-area'), {
+                scale: 2, 
+                backgroundColor: "#dbd0bc",
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `white6-${new Date().getTime()}.jpg`;
+                link.href = canvas.toDataURL("image/jpeg", 0.9);
+                link.click();
+            });
+        }
+
+        // 【分享方式 2：導出 HTML】
         function exportHTML() {
             document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄";
-            // 克隆並設置讀者模式
-            let currentHTML = document.documentElement.outerHTML;
-            // 注入讀者模式標記
-            const shareHTML = currentHTML.replace('<script>', '<script>window.name="reader";<\/script><script>');
-            
-            const blob = new Blob([shareHTML], {type: 'text/html'});
+            let code = document.documentElement.outerHTML;
+            // 注入自動讀者模式腳本
+            const shareCode = code.replace('<script>', '<script>window.name="white6_reader";<\/script><script>');
+            const blob = new Blob([shareCode], {type: 'text/html'});
             const link = document.createElement('a');
-            link.download = `white6-daily-interactive.html`;
+            link.download = `white6-interactive.html`;
             link.href = URL.createObjectURL(blob);
             link.click();
-            alert("✨ 分享版 HTML 已成功導出！\n\n收訊者打開後會自動定位，且看不到編輯面板。");
+            alert("已成功導出互動網頁版！");
         }
 
         // 圖片操控
         const sync = () => { finalImg.style.transform = rawImg.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`; };
         zoom.oninput = () => { scale = zoom.value; sync(); };
-
-        const startMove = (e) => {
-            isDragging = true;
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            startX = cx - posX; startY = cy - posY;
-        };
-        const doMove = (e) => {
-            if (!isDragging) return;
-            const cx = e.touches ? e.touches[0].clientX : e.clientX;
-            const cy = e.touches ? e.touches[0].clientY : e.clientY;
-            posX = cx - startX; posY = cy - startY; sync();
-        };
-        viewport.addEventListener('mousedown', startMove);
-        window.addEventListener('mousemove', doMove);
-        window.addEventListener('mouseup', () => isDragging = false);
-        viewport.addEventListener('touchstart', startMove);
-        viewport.addEventListener('touchmove', (e) => { e.preventDefault(); doMove(e); });
-        viewport.addEventListener('touchend', () => isDragging = false);
+        const v = document.getElementById('viewport');
+        const sM = (e) => { isDragging = true; const c = e.touches ? e.touches[0] : e; startX = c.clientX - posX; startY = c.clientY - posY; };
+        const dM = (e) => { if (!isDragging) return; const c = e.touches ? e.touches[0] : e; posX = c.clientX - startX; posY = c.clientY - startY; sync(); };
+        v.onmousedown = sM; window.onmousemove = dM; window.onmouseup = () => isDragging = false;
+        v.ontouchstart = sM; v.ontouchmove = (e) => { e.preventDefault(); dM(e); }; v.ontouchend = () => isDragging = false;
     </script>
 </body>
 </html>
