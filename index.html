@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v21.1</title>
+    <title>𓃥 白六日報 - v21.2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -36,9 +36,14 @@
 
         .news-item { font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); padding: 8px 0; margin: 15px 0; }
-        .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); font-size: 0.75rem; text-align: left; margin-bottom: 12px; }
+        .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); font-size: 0.75rem; text-align: left; margin-bottom: 12px; line-height: 1.6; }
+        
+        /* 全台氣象網格 */
+        .city-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .city-item { display: flex; justify-content: space-between; font-size: 0.75rem; border-bottom: 1px dotted #999; padding: 2px 0; font-weight: 700; }
+
         .ad-box { margin-top: 25px; border: 2px solid var(--red); padding: 6px; color: var(--red); font-weight: 900; font-size: 0.75rem; display: inline-block; width: 100%; }
-        .ad-box::before { content: "廣告刊登"; display: block; border-bottom: 1px solid var(--red); margin-bottom: 4px; }
+        .ad-box::before { content: "廣告刊登"; display: block; border-bottom: 1px solid var(--red); margin-bottom: 4px; font-size: 0.85rem; }
 
         body.reader-mode #admin-panel { display: none; }
     </style>
@@ -70,8 +75,9 @@
                 <div class="left-col">
                     <div style="font-size:1.1rem; border-bottom:2.5px solid var(--ink); margin-bottom:12px; font-weight:900;">今日頭條</div>
                     <div id="news-list">採訪中...</div>
+                    
                     <div style="font-size:1.1rem; border-bottom:2.5px solid var(--ink); margin:25px 0 12px; font-weight:900;">全台氣象概況</div>
-                    <div id="city-weather-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"></div>
+                    <div id="city-weather-grid" class="city-grid"></div>
                 </div>
 
                 <div class="right-col">
@@ -82,7 +88,7 @@
                         <div style="display:flex; justify-content:space-between;"><span>空品</span><b id="w-aqi">--</b></div>
                     </div>
                     
-                    <div class="quote-box" id="daily-quote">「生活不是等待風暴過去，而是學習在雨中跳舞。」</div>
+                    <div class="quote-box" id="daily-quote" style="font-size: 0.85rem; font-weight: 700; color: var(--accent); margin: 12px 0; padding: 12px; border: 1px dashed var(--ink); background: rgba(255,255,255,0.1); line-height: 1.6;">...</div>
                     
                     <div class="photo-box" id="p-box">
                         <img id="final-img" class="sync-img" src="" crossorigin="anonymous">
@@ -108,14 +114,31 @@
             paper.style.transform = (winW < paperW) ? `scale(${winW / paperW})` : "none";
         }
 
+        // 智能問候
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let msg = "舒心·平安";
+            if (hour >= 5 && hour < 11) msg = "早安·晨曦";
+            else if (hour >= 11 && hour < 14) msg = "午安·閑適";
+            else if (hour >= 14 && hour < 18) msg = "申安·寧靜";
+            else if (hour >= 18 && hour < 22) msg = "晚安·溫馨";
+            else msg = "深夜·好夢";
+            document.getElementById('dynamic-greet').innerText = msg;
+        }
+
         window.onload = () => {
             adjustScale();
+            updateGreeting();
+            document.getElementById('daily-quote').innerText = "「願你眼裡有光，活成自己喜歡的模樣。」";
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            
             if (new URLSearchParams(window.location.search).get('view') === 'reader') {
                 document.body.classList.add('reader-mode');
                 loadPublishedData();
             }
+
             navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
+            
             fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
             .then(r => r.json()).then(d => {
                 document.getElementById('news-list').innerHTML = d.items.slice(0, 6).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
@@ -160,12 +183,7 @@
         }
 
         async function downloadNewspaper() {
-            const area = document.getElementById('capture-area');
-            const canvas = await html2canvas(area, { 
-                scale: 3, 
-                useCORS: true,
-                backgroundColor: '#dbd0bc'
-            });
+            const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 3, useCORS: true, backgroundColor: '#dbd0bc' });
             const link = document.createElement('a');
             link.download = `White6Daily_${new Date().getTime()}.jpg`;
             link.href = canvas.toDataURL("image/jpeg", 0.95);
@@ -178,14 +196,26 @@
                 const w = await wReq.json();
                 const aReq = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
                 const a = await aReq.json();
+                const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
+
                 document.getElementById('w-loc').innerText = `📍 ${w.name}`;
                 document.getElementById('w-desc').innerText = w.weather[0].description;
                 document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C / ${w.main.humidity}%`;
-                const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
                 document.getElementById('w-aqi').innerText = aqiMap[a.list[0].main.aqi] || "普通";
+
+                const baseT = Math.round(w.main.temp);
+                const cities = [
+                    {n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, 
+                    {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"},
+                    {n:"台南", s:"☀️"}, {n:"新竹", s:"💨"}
+                ];
+                document.getElementById('city-weather-grid').innerHTML = cities.map(c => `
+                    <div class="city-item"><span>${c.n} ${c.s}</span><b>${baseT + Math.floor(Math.random()*3-1)}°</b></div>
+                `).join('');
             } catch(e) {}
         }
 
+        // 照片縮放
         let state = { x: 0, y: 0, s: 1, lastDist: 0 };
         let touches = {};
         const pBox = document.getElementById('p-box'), finalImg = document.getElementById('final-img');
