@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v12.60 照片編輯版</title>
+    <title>𓃥 白六日報 - v12.70 視覺強化版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -12,9 +12,8 @@
         
         /* 編輯器控制區 */
         #admin-panel { background: #222; width: 100%; padding: 15px 0; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .edit-viewport { width: 180px; height: 180px; margin: 10px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; touch-action: none; cursor: move; }
+        .edit-viewport { width: 160px; height: 160px; margin: 10px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; touch-action: none; cursor: move; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
-        .controls { margin-top: 10px; }
         .input-box { width: 85%; max-width: 400px; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center; }
         
         /* 報紙本體 */
@@ -30,12 +29,19 @@
 
         .section-h { font-size: 1.1rem; border-bottom: 2px solid var(--ink); margin: 15px 0 8px 0; padding-bottom: 2px; font-weight: 900; }
         .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
+        
+        /* 全台天氣圖案網格 */
         .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 1px 2px; }
-        .city-chip b { color: var(--accent); }
+        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 2px 0; align-items: center; }
+        .city-chip .icon { margin: 0 4px; font-size: 0.8rem; }
+        .city-chip b { color: var(--accent); min-width: 40px; text-align: right; }
 
-        /* 報紙內的照片框 */
-        .photo-box { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
+        /* 定位點詳細資訊 */
+        .local-box { border: 1.5px solid var(--ink); padding: 6px; background: rgba(255,255,255,0.2); }
+        .local-row { display: flex; justify-content: space-between; font-size: 0.75rem; margin: 2px 0; border-bottom: 0.5px solid rgba(0,0,0,0.1); }
+        .aqi-tag { padding: 0 4px; border-radius: 3px; font-weight: bold; color: #fff; font-size: 0.65rem; }
+
+        .photo-box { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; margin-top: 10px; }
         .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; background: rgba(255,255,255,0.2); }
         
         .btn { padding: 10px 18px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; margin: 5px; }
@@ -48,20 +54,13 @@
 <body>
 
     <div id="admin-panel">
-        <div id="status">📸 影像編輯系統：請上傳照片</div>
+        <div id="status">📡 數據同步中...</div>
         <div id="editor-ui" style="display: none;">
-            <div class="edit-viewport" id="viewport">
-                <img id="raw-img" class="sync-img" src="">
-            </div>
-            <div class="controls">
-                <label>縮放：</label>
-                <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 200px;">
-                <br>
-                <input type="text" id="in-cap" class="input-box" placeholder="輸入今日心情..." oninput="syncPreview()">
-                <br>
-                <button class="btn btn-green" onclick="uploadToGithub()">發布至雲端</button>
-                <button class="btn btn-red" onclick="downloadNewspaper()">下載圖片</button>
-            </div>
+            <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
+            <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 200px;"><br>
+            <input type="text" id="in-cap" class="input-box" placeholder="輸入今日心情..." oninput="syncPreview()"><br>
+            <button class="btn btn-green" onclick="uploadToGithub()">發布雲端</button>
+            <button class="btn btn-red" onclick="downloadNewspaper()">下載圖片</button>
         </div>
         <div id="upload-ui">
             <button class="btn" style="background:white" onclick="document.getElementById('upload').click()">「 1. 選擇照片 」</button>
@@ -79,19 +78,22 @@
                 <div class="left-col">
                     <div class="section-h">今日頭條新聞</div>
                     <div id="news-list">新聞載入中...</div>
-                    <div class="section-h">全台各地氣溫</div>
+                    <div class="section-h">全台各地天氣</div>
                     <div class="weather-grid" id="city-weather-grid"></div>
                 </div>
                 <div class="right-col">
+                    <div class="local-box">
+                        <div id="w-loc" style="font-weight:900; border-bottom:1.5px solid var(--ink); margin-bottom:5px; text-align:center;">📍 定位中...</div>
+                        <div class="local-row"><span>天候</span><b id="w-desc">--</b></div>
+                        <div class="local-row"><span>氣溫</span><b id="w-temp" style="color:var(--accent)">--°C</b></div>
+                        <div class="local-row"><span>濕度</span><b id="w-hum">--%</b></div>
+                        <div class="local-row"><span>空品</span><span id="w-aqi" class="aqi-tag">--</span></div>
+                    </div>
                     <div class="photo-box" id="p-box">
                         <img id="final-img" class="sync-img" src="">
                     </div>
                     <div class="photo-cap" id="out-cap">今日影像紀錄</div>
                     <div style="font-size:1.6rem; font-weight:900; color:var(--accent); text-align:center; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink); padding:8px 0; margin:8px 0;">午安·舒心</div>
-                    <div style="border:1.5px solid var(--ink); padding:4px; text-align:center;">
-                        <div id="w-loc" style="font-size:0.8rem; font-weight:bold;">📍 定位中...</div>
-                        <div id="w-temp" style="font-size:1.2rem; color:var(--accent); font-weight:900;">--°C</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -102,42 +104,33 @@
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 圖片編輯邏輯
-        let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
-        const viewport = document.getElementById('viewport');
-        const rawImg = document.getElementById('raw-img');
-        const finalImg = document.getElementById('final-img');
-        const zoomCtrl = document.getElementById('zoom-ctrl');
+        // 天氣圖案映射表
+        const iconMap = { "晴": "☀️", "多雲": "⛅", "陰": "☁️", "雨": "🌧️", "雷": "⛈️", "霧": "🌫️" };
 
-        function updateTransform() {
-            const transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
-            rawImg.style.transform = transform;
-            finalImg.style.transform = transform;
+        function getWeatherIcon(desc) {
+            if (desc.includes("晴")) return iconMap["晴"];
+            if (desc.includes("雲")) return iconMap["多雲"];
+            if (desc.includes("雨")) return iconMap["雨"];
+            if (desc.includes("雷")) return iconMap["雷"];
+            return iconMap["陰"];
         }
 
-        // 滑鼠/手指 拖動事件
-        const startDrag = (e) => {
-            isDragging = true;
-            const event = e.touches ? e.touches[0] : e;
-            startX = event.clientX - posX;
-            startY = event.clientY - posY;
-        };
-        const moveDrag = (e) => {
-            if (!isDragging) return;
-            const event = e.touches ? e.touches[0] : e;
-            posX = event.clientX - startX;
-            posY = event.clientY - startY;
-            updateTransform();
-        };
+        // 圖片編輯器邏輯 (保持拖曳與縮放)
+        let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
+        const viewport = document.getElementById('viewport'), rawImg = document.getElementById('raw-img'), finalImg = document.getElementById('final-img'), zoomCtrl = document.getElementById('zoom-ctrl');
+        
+        function updateTransform() {
+            const t = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
+            rawImg.style.transform = finalImg.style.transform = t;
+        }
+
+        const startDrag = (e) => { isDragging = true; const ev = e.touches ? e.touches[0] : e; startX = ev.clientX - posX; startY = ev.clientY - posY; };
+        const moveDrag = (e) => { if (!isDragging) return; const ev = e.touches ? e.touches[0] : e; posX = ev.clientX - startX; posY = ev.clientY - startY; updateTransform(); };
         const endDrag = () => isDragging = false;
 
-        viewport.addEventListener('mousedown', startDrag);
-        window.addEventListener('mousemove', moveDrag);
-        window.addEventListener('mouseup', endDrag);
-        viewport.addEventListener('touchstart', startDrag);
-        window.addEventListener('touchmove', moveDrag);
-        window.addEventListener('touchend', endDrag);
-
+        viewport.onmousedown = viewport.ontouchstart = startDrag;
+        window.onmousemove = window.ontouchmove = moveDrag;
+        window.onmouseup = window.ontouchend = endDrag;
         zoomCtrl.oninput = () => { scale = zoomCtrl.value; updateTransform(); };
 
         document.getElementById('upload').onchange = (e) => {
@@ -146,34 +139,49 @@
                 rawImg.src = finalImg.src = ev.target.result;
                 document.getElementById('editor-ui').style.display = 'block';
                 document.getElementById('upload-ui').style.display = 'none';
-                document.getElementById('status').innerText = "🖱️ 拖曳調整位置 / 拉桿縮放";
+                document.getElementById('status').innerText = "🖱️ 請調整照片至框內最佳位置";
             };
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        // --- 其餘氣象與新聞邏輯 (同前版) ---
+        // 氣象與新聞
         async function init() {
             fetchNews();
+            navigator.geolocation.getCurrentPosition(async p => {
+                const lat = p.coords.latitude, lon = p.coords.longitude;
+                // 天氣數據
+                const wRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
+                const w = await wRes.json();
+                // 空品數據
+                const aRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+                const a = await aRes.json();
+                
+                const base = Math.round(w.main.temp);
+                const desc = w.weather[0].description;
+                const aqiMap = { 1:["優","#27ae60"], 2:["良","#f1c40f"], 3:["普通","#e67e22"], 4:["差","#e74c3c"], 5:["極差","#8e44ad"] };
+
+                document.getElementById('w-loc').innerText = `📍 ${w.name}`;
+                document.getElementById('w-desc').innerText = `${getWeatherIcon(desc)} ${desc}`;
+                document.getElementById('w-temp').innerText = `${base}°C`;
+                document.getElementById('w-hum').innerText = `${w.main.humidity}%`;
+                document.getElementById('w-aqi').innerText = aqiMap[a.list[0].main.aqi][0];
+                document.getElementById('w-aqi').style.background = aqiMap[a.list[0].main.aqi][1];
+
+                updateCityGrid(base, desc);
+            });
             const params = new URLSearchParams(window.location.search);
             if (params.get('view') === 'reader') {
                 document.body.setAttribute('data-view', 'reader');
                 finalImg.src = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
             }
-            navigator.geolocation.getCurrentPosition(async p => {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&appid=${API_KEY}&units=metric&lang=zh_tw`);
-                const w = await res.json();
-                const base = Math.round(w.main.temp);
-                document.getElementById('w-loc').innerText = `📍 ${w.name}`;
-                document.getElementById('w-temp').innerText = `${base}°C`;
-                updateCityGrid(base);
-            });
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
         }
 
-        function updateCityGrid(base) {
-            const cities = ["台北","新北","基隆","桃園","新竹","台中","台南","高雄","屏東","宜蘭","花蓮","台東"];
+        function updateCityGrid(base, desc) {
+            const cities = ["台北","新北","基隆","桃園","新竹","台中","彰化","台南","高雄","屏東","宜蘭","花蓮","台東","澎湖"];
+            const icon = getWeatherIcon(desc);
             document.getElementById('city-weather-grid').innerHTML = cities.map((c, i) => `
-                <div class="city-chip"><span>${c}</span><b>${base+(i%3)-1}°</b></div>
+                <div class="city-chip"><span>${c}</span><span class="icon">${icon}</span><b>${base+(i%3)-1}°</b></div>
             `).join('');
         }
 
@@ -184,7 +192,6 @@
         }
 
         function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
-        
         async function uploadToGithub() {
             const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
             const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
@@ -193,13 +200,12 @@
             const getRes = await fetch(url);
             let sha = getRes.ok ? (await getRes.json()).sha : null;
             await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha }) });
-            alert("發布成功！");
+            alert("✅ 雲端刊印成功！");
         }
-
         async function downloadNewspaper() {
             const canvas = await html2canvas(document.getElementById('capture-area'), { useCORS: true, scale: 2 });
             const link = document.createElement('a');
-            link.download = `白六日報.jpg`;
+            link.download = `白六日報_${new Date().getTime()}.jpg`;
             link.href = canvas.toDataURL("image/jpeg", 0.9);
             link.click();
         }
