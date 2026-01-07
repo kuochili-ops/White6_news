@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v10.11 比例完美版</title>
+    <title>𓃥 白六日報 - v10.11</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -11,12 +11,12 @@
 
         body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; align-items: center; color: #fff; }
         
-        /* 編輯台控制 */
+        /* 編輯器佈局 */
         #editor-deck { position: sticky; top: 0; z-index: 9999; background: #222; width: 100%; padding: 10px 0; text-align: center; border-bottom: 2px solid var(--accent); }
-        .edit-viewport { width: 160px; height: 200px; margin: 8px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; touch-action: none; }
+        .edit-viewport { width: 150px; height: 180px; margin: 8px auto; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; }
-        .input-box { width: 85%; max-width: 300px; padding: 6px; margin: 4px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; font-size: 0.8rem; }
-        .btn { background: var(--accent); color: #fff; padding: 8px 20px; border: none; cursor: pointer; font-weight: bold; margin: 5px; border-radius: 4px; }
+        .input-box { width: 85%; max-width: 320px; padding: 8px; margin: 4px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; font-size: 0.85rem; }
+        .btn { background: var(--accent); color: #fff; padding: 10px 25px; border: none; cursor: pointer; font-weight: bold; margin: 5px; border-radius: 4px; }
 
         /* 報紙主結構 */
         #newspaper-output { display: none; padding: 20px 0; width: 100%; justify-content: center; }
@@ -29,44 +29,37 @@
         header { border-top: 4px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; }
         .newspaper-title { font-size: 3rem; font-weight: 900; letter-spacing: 2px; margin: 6px 0; white-space: nowrap; }
 
-        /* 雙欄佈局核心 */
-        .content-container { display: flex; gap: 15px; height: 530px; }
+        /* 核心兩欄佈局 */
+        .main-content { display: flex; gap: 15px; align-items: flex-start; }
 
-        /* 左側：橫排新聞欄位 (由上到下) */
-        .news-column-left {
-            width: 220px; 
-            display: flex; flex-direction: column; 
-            justify-content: space-between; /* 均勻分佈 */
+        /* 左排：由上到下排列的新聞欄 */
+        .left-news-stack {
+            width: 220px; /* 固定寬度略小於左側總空間 */
+            display: flex; flex-direction: column; gap: 15px;
         }
-        .news-block { border-bottom: 1px solid rgba(26,26,26,0.1); padding-bottom: 12px; }
+        .news-block { border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; }
         .news-block:last-child { border-bottom: none; }
-        
-        .news-label { 
-            background: var(--ink); color: var(--paper); 
-            padding: 2px 8px; font-size: 0.75rem; font-weight: 900;
-            display: inline-block; margin-bottom: 6px;
+        .news-tag { 
+            background: var(--ink); color: var(--paper); padding: 2px 8px; 
+            font-size: 0.7rem; font-weight: 900; display: inline-block; margin-bottom: 5px;
         }
-        .news-text { 
-            font-size: 1rem; line-height: 1.6; text-align: justify;
-            font-weight: 500;
-        }
+        .news-text { font-size: 1rem; line-height: 1.6; text-align: justify; font-weight: 500; }
 
-        /* 右側：視覺鎖定欄位 */
-        .visual-column-right {
-            width: 145px; flex-shrink: 0;
-            display: flex; flex-direction: column; gap: 10px;
-            border-left: 1.5px solid var(--ink); padding-left: 12px;
+        /* 右排：垂直鎖定視覺區 */
+        .right-visual-sidebar {
+            width: 130px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 8px;
+            border-left: 1.5px solid var(--ink); padding-left: 10px;
         }
-        
-        .photo-box { width: 100%; height: 180px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #fff; }
-        .photo-desc { font-size: 0.7rem; text-align: center; font-weight: bold; margin-top: -5px; }
-        .morning-greeting { font-size: 2.2rem; font-weight: 900; color: var(--accent); text-align: center; line-height: 1; margin: 5px 0; }
-        .quote-box { font-size: 0.9rem; font-weight: 700; line-height: 1.4; padding: 8px; border: 1px dashed var(--ink); background: rgba(0,0,0,0.02); }
-        .weather-panel { font-size: 0.65rem; line-height: 1.4; border-top: 1px solid var(--ink); padding-top: 8px; font-weight: bold; }
+        .photo-frame { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #fff; }
+        .caption { font-size: 0.65rem; text-align: center; font-weight: bold; margin-top: -2px; line-height: 1.2; }
+        .morning-h1 { font-size: 2rem; font-weight: 900; color: var(--accent); text-align: center; line-height: 1; margin: 5px 0; }
+        .quote-box { font-size: 0.85rem; font-weight: 700; line-height: 1.4; padding: 6px; border: 1px dashed var(--ink); background: rgba(0,0,0,0.02); }
+        .weather-list { font-size: 0.6rem; line-height: 1.4; border-top: 1px solid var(--ink); padding-top: 6px; }
 
-        .ad-bottom { margin-top: 15px; border: 4px double var(--ink); padding: 10px; text-align: center; }
+        .footer { margin-top: 15px; border: 4px double var(--ink); padding: 8px; text-align: center; }
         #result-preview { display: none; text-align: center; padding: 20px; }
-        #result-preview img { width: 100%; max-width: 400px; border: 6px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #result-preview img { width: 100%; max-width: 400px; border: 6px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -78,12 +71,12 @@
         </div>
         <div id="step-2" style="display:none;">
             <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
-            <input type="range" id="zoom" style="width:200px;" min="0.1" max="3" step="0.01">
+            <input type="range" id="zoom" style="width:180px" min="0.1" max="3" step="0.01">
             <div id="inputs">
                 <input type="text" id="in-cap" class="input-box" value="每日一圖 可愛的白六">
-                <textarea id="in-n1" class="input-box" rows="2" placeholder="新聞欄一內容"></textarea>
-                <textarea id="in-n2" class="input-box" rows="2" placeholder="新聞欄二內容"></textarea>
-                <textarea id="in-n3" class="input-box" rows="2" placeholder="新聞欄三內容"></textarea>
+                <textarea id="in-n1" class="input-box" rows="2" placeholder="氣象新聞">強烈冷氣團發威，北投清晨最低溫僅 8.9 度。合歡山區有降雪機率，請注意保暖。</textarea>
+                <textarea id="in-n2" class="input-box" rows="2" placeholder="即時新聞一">今日台股氣勢如虹，AI 科技股領軍強攻。國防部搜尋失聯機件任務進行中。</textarea>
+                <textarea id="in-n3" class="input-box" rows="2" placeholder="即時新聞二">北投溫泉季吸引大批民眾，帶動在地經濟。環境保護法案今日三讀通過。</textarea>
             </div>
             <button class="btn" onclick="publish()">「 確 認 出 版 」</button>
         </div>
@@ -92,45 +85,45 @@
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; font-weight:bold;">
+                <div style="display:flex; justify-content:space-between; font-size:0.6rem; font-weight:bold;">
                     <span>歲次 乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
             </header>
 
-            <div class="content-container">
-                <div class="news-column-left">
+            <div class="main-content">
+                <div class="left-news-stack">
                     <div class="news-block">
-                        <div class="news-label">氣象局稿</div>
+                        <div class="news-tag">氣象局稿</div>
                         <div class="news-text" id="out-n1"></div>
                     </div>
                     <div class="news-block">
-                        <div class="news-label">即時新聞</div>
+                        <div class="news-tag">即時新聞</div>
                         <div class="news-text" id="out-n2"></div>
                     </div>
                     <div class="news-block">
-                        <div class="news-label">焦點關注</div>
+                        <div class="news-tag">焦點關注</div>
                         <div class="news-text" id="out-n3"></div>
                     </div>
                 </div>
 
-                <div class="visual-column-right">
-                    <div class="photo-box"><img id="final-img" class="sync-img" src=""></div>
-                    <div class="photo-desc" id="out-cap"></div>
-                    <div class="morning-greeting">早安<br>平安</div>
+                <div class="right-visual-sidebar">
+                    <div class="photo-frame"><img id="final-img" class="sync-img" src=""></div>
+                    <div class="caption" id="out-cap"></div>
+                    <div class="morning-h1">早安<br>平安</div>
                     <div class="quote-box" id="display-quote"></div>
-                    <div class="weather-panel">
-                        【各地氣象預測】<br>
+                    <div class="weather-list">
+                        <strong>【各地氣象預測】</strong><br>
                         台北 9° | 台中 11° | 高雄 14°<br>
                         宜蘭 10° | 花蓮 14° | 澎湖 15°
                     </div>
                 </div>
             </div>
 
-            <div class="ad-bottom">
-                <b style="font-size:1rem; color:var(--accent); letter-spacing:3px;">廣 告 招 租 ‧ 效 果 宏 大</b><br>
-                <span style="font-size:0.75rem;">意者請洽：chilikuo@gmail.com</span>
+            <div class="footer">
+                <b style="font-size:1rem; color:var(--accent); letter-spacing:2px;">廣 告 招 租 ‧ 效 果 宏 大</b><br>
+                <span style="font-size:0.7rem;">意者請洽：chilikuo@gmail.com</span>
             </div>
         </div>
     </div>
@@ -162,7 +155,7 @@
                     document.getElementById('step-2').style.display = 'block';
                     document.getElementById('display-quote').innerText = quotes[new Date().getDay()];
                     rawImg.onload = () => {
-                        currentScale = Math.max(160/rawImg.naturalWidth, 200/rawImg.naturalHeight);
+                        currentScale = Math.max(150/rawImg.naturalWidth, 180/rawImg.naturalHeight);
                         zoom.value = currentScale; sync();
                     };
                 };
@@ -171,9 +164,9 @@
         };
 
         function publish() {
-            document.getElementById('out-n1').innerText = document.getElementById('in-n1').value || "今日天氣穩定，氣溫回升。";
-            document.getElementById('out-n2').innerText = document.getElementById('in-n2').value || "即時重點摘要，社會溫馨新聞。";
-            document.getElementById('out-n3').innerText = document.getElementById('in-n3').value || "全球趨勢觀察，掌握最新動向。";
+            document.getElementById('out-n1').innerText = document.getElementById('in-n1').value;
+            document.getElementById('out-n2').innerText = document.getElementById('in-n2').value;
+            document.getElementById('out-n3').innerText = document.getElementById('in-n3').value;
             document.getElementById('out-cap').innerText = document.getElementById('in-cap').value;
             
             const output = document.getElementById('newspaper-output');
@@ -181,11 +174,10 @@
             sync();
             setTimeout(() => {
                 html2canvas(document.getElementById('capture-area'), { scale: 3 }).then(canvas => {
-                    const img = new Image(); img.src = canvas.toDataURL("image/jpeg", 0.9);
+                    const img = new Image(); img.src = canvas.toDataURL("image/jpeg", 0.95);
                     output.style.display = 'none';
                     document.getElementById('editor-deck').style.display = 'none';
                     document.getElementById('result-preview').style.display = 'block';
-                    document.getElementById('image-container').innerHTML = '';
                     document.getElementById('image-container').appendChild(img);
                 });
             }, 600);
