@@ -2,171 +2,79 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v13.5 終極修復版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𓃥 白六日報 - 測試版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
-        :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
-        body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; }
+        body { background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding-top: 50px; font-family: sans-serif; }
         
-        /* 核心管理區：禁止文字選取以防干擾點擊 */
-        .admin-box { 
-            width: 100%; max-width: 440px; background: #333; padding: 15px; 
-            border-radius: 10px; border: 2px solid var(--accent); margin-bottom: 20px; 
-            box-sizing: border-box; 
-            -webkit-user-select: none; /* 防止 iOS 長按選取文字 */
-            user-select: none;
+        /* 測試用的超大原生按鈕 */
+        .test-input { 
+            width: 90%; 
+            height: 100px; 
+            font-size: 20px; 
+            background: white; 
+            color: black; 
+            border: 5px solid #f39c12; 
+            border-radius: 15px;
+            margin-bottom: 30px;
         }
-        .instruction { color: #f39c12; font-weight: bold; margin-bottom: 8px; display: block; font-size: 0.9rem; }
-        
-        /* 1. 檔案上傳：加大點擊區域 */
-        .raw-input { 
-            width: 100%; font-size: 18px; background: #eee; color: black; 
-            padding: 15px; margin-bottom: 15px; display: block; border-radius: 6px; 
-            border: 2px solid #999;
-        }
-        
-        /* 2. 連結分享：增加複製按鈕 */
-        .url-row { display: flex; gap: 5px; margin-bottom: 15px; }
-        .url-box { 
-            flex: 1; padding: 10px; background: #000; color: #00ff00; 
-            border: 1px solid #666; font-family: monospace; font-size: 14px; 
-            box-sizing: border-box; border-radius: 4px;
-            pointer-events: auto; /* 僅此處允許點擊 */
-        }
-        .btn-copy { background: #f39c12; border: none; color: white; padding: 0 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        .btn-publish { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-weight: 900; font-size: 1.1rem; border-radius: 8px; cursor: pointer; }
-
-        /* 3. 編輯預覽區 */
-        .edit-ui { display: none; padding-top: 15px; border-top: 1px solid #555; }
-        .edit-viewport { width: 140px; height: 140px; border: 2px solid #fff; position: relative; overflow: hidden; background: #000; margin: 0 auto 10px; touch-action: none; }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
-
-        /* 報紙本體 */
-        #newspaper-output { padding: 15px 0; width: 100%; display: flex; justify-content: center; }
-        #capture-area { width: 440px; background-color: var(--paper); padding: 25px; color: var(--ink); box-sizing: border-box; }
-        header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
-        .newspaper-title { font-size: 3.5rem; font-weight: 900; letter-spacing: 10px; margin: 5px 0; }
-        .layout-grid { display: flex; border-bottom: 2.5px solid var(--ink); padding-bottom: 15px; }
-        .left-col { width: 250px; padding-right: 15px; border-right: 1.5px solid var(--ink); }
-        .right-col { width: 160px; padding-left: 15px; }
-        .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
-        .photo-box { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
-        .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; }
-        .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 10px 0; }
-        
-        body[data-view="reader"] .admin-box { display: none !important; }
+        #editor-ui { display: none; width: 90%; text-align: center; border-top: 1px solid #555; padding-top: 20px; }
+        .viewport { width: 150px; height: 150px; border: 2px solid #fff; margin: 10px auto; overflow: hidden; position: relative; background: #000; }
+        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .btn-pub { background: #27ae60; color: white; padding: 20px; width: 100%; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-box">
-        <span class="instruction">❶ 點擊按鈕複製分享網址：</span>
-        <div class="url-row">
-            <input type="text" readonly id="share-url" class="url-box" onclick="this.select()">
-            <button class="btn-copy" onclick="copyAction()">複製</button>
-        </div>
+    <h2>步驟 1：點擊下方大按鈕</h2>
+    <input type="file" id="upload" accept="image/*" class="test-input">
 
-        <span class="instruction">❷ 點擊下方區塊上傳今日照片：</span>
-        <input type="file" id="upload" accept="image/*" class="raw-input">
-        
-        <div id="edit-ui" class="edit-ui">
-            <div style="text-align: center;">
-                <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
-                <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%;">
-                <p style="font-size:12px; color:#aaa; margin:5px 0;">(手指拖曳照片可調整位置)</p>
-            </div>
-            <input type="text" id="in-cap" placeholder="輸入今日圖說 (如: 大好)" style="width:100%; padding:10px; margin-bottom:15px; box-sizing:border-box;" oninput="syncPreview()">
-            <button class="btn-publish" id="pub-btn" onclick="uploadToGithub()">❸ 刊印發布報紙</button>
+    <div id="editor-ui">
+        <h2>步驟 2：調整並發布</h2>
+        <div class="viewport" id="viewport">
+            <img id="raw-img" class="sync-img" src="">
         </div>
-    </div>
-
-    <div id="newspaper-output">
-        <div id="capture-area">
-            <header>
-                <div class="date-line"><span id="lunar-date">歲次 乙巳年 十一月十九</span><span id="solar-date">2026年1月7日</span></div>
-                <h1 class="newspaper-title">𓃥 白六日報</h1>
-            </header>
-            <div class="layout-grid">
-                <div class="left-col">
-                    <div id="news-list">新聞載入中...</div>
-                </div>
-                <div class="right-col">
-                    <div class="photo-box" id="p-box"><img id="final-img" class="sync-img" src=""></div>
-                    <div class="photo-cap" id="out-cap">今日影像紀錄</div>
-                    <div class="greet">午安·舒心</div>
-                </div>
-            </div>
-        </div>
+        <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%;">
+        <br><br>
+        <button class="btn-pub" onclick="uploadToGithub()">確定刊印發布</button>
     </div>
 
     <script>
         const TK_PARTS = ["ghp_CbTbFJpfe9j2u0ER", "U80NwlkHv5NJVQ23vKXE"];
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
 
-        function copyAction() {
-            const copyText = document.getElementById("share-url");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            document.execCommand("copy");
-            alert("✅ 網址已複製！");
-        }
+        const uploadInput = document.getElementById('upload');
+        const editorUi = document.getElementById('editor-ui');
+        const rawImg = document.getElementById('raw-img');
 
-        let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
-        const viewport = document.getElementById('viewport'), rawImg = document.getElementById('raw-img'), finalImg = document.getElementById('final-img'), zoomCtrl = document.getElementById('zoom-ctrl');
-        
-        function updateTransform() {
-            const t = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
-            rawImg.style.transform = finalImg.style.transform = t;
-        }
-
-        viewport.ontouchstart = (e) => { isDragging = true; startX = e.touches[0].clientX - posX; startY = e.touches[0].clientY - posY; };
-        window.ontouchmove = (e) => { if (!isDragging) return; posX = e.touches[0].clientX - startX; posY = e.touches[0].clientY - startY; updateTransform(); };
-        window.ontouchend = () => isDragging = false;
-        zoomCtrl.oninput = () => { scale = zoomCtrl.value; updateTransform(); };
-
-        document.getElementById('upload').onchange = (e) => {
-            if (!e.target.files[0]) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                rawImg.src = finalImg.src = ev.target.result;
-                document.getElementById('edit-ui').style.display = 'block';
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        };
+        // 監聽最原始的變化事件
+        uploadInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    rawImg.src = ev.target.result;
+                    editorUi.style.display = 'block'; // 只有選了照片才顯示後續操作
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
 
         async function uploadToGithub() {
-            const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 刊印中...";
+            const btn = event.target;
+            btn.innerText = "⏳ 發布中...";
             try {
-                const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
+                const canvas = await html2canvas(document.getElementById('viewport'), { useCORS: true });
                 const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
                 const url = `https://api.github.com/repos/${GH_CONFIG.owner}/${GH_CONFIG.repo}/contents/${GH_CONFIG.path}`;
                 const headers = { "Authorization": `token ${TK_PARTS.join('')}`, "Content-Type": "application/json" };
                 const getRes = await fetch(url);
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha }) });
-                if (putRes.ok) { alert("✅ 刊印成功！"); }
-                btn.innerText = "❸ 刊印發布報紙";
-            } catch (e) { alert("發布失敗"); btn.innerText = "❸ 刊印發布報紙"; }
+                if (putRes.ok) { alert("✅ 刊印成功！"); location.reload(); }
+            } catch (e) { alert("錯誤"); btn.innerText = "確定刊印發布"; }
         }
-
-        function init() {
-            document.getElementById('share-url').value = window.location.origin + window.location.pathname + "?view=reader";
-            fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
-            .then(r => r.json()).then(d => {
-                document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
-            });
-            document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
-            if (new URLSearchParams(window.location.search).get('view') === 'reader') {
-                document.body.setAttribute('data-view', 'reader');
-                finalImg.src = `https://raw.githubusercontent.com/${GH_CONFIG.owner}/${GH_CONFIG.repo}/main/${GH_CONFIG.path}?t=${new Date().getTime()}`;
-            }
-        }
-        function syncPreview() { document.getElementById('out-cap').innerText = document.getElementById('in-cap').value || "今日影像紀錄"; }
-        window.onload = init;
     </script>
 </body>
 </html>
