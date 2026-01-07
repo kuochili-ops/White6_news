@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v21.0</title>
+    <title>𓃥 白六日報 - v21.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -13,14 +13,15 @@
         
         #admin-panel { background: rgba(30, 30, 30, 0.98); width: 100%; padding: 12px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
         .input-box { width: 100%; max-width: 400px; height: 40px; background: #333; border: 1px solid #555; color: #fff; border-radius: 6px; padding: 0 10px; font-size: 16px; text-align: center; margin-bottom: 10px; display: block; margin: 0 auto; }
-        .btn-row { display: flex; gap: 5px; width: 100%; max-width: 440px; margin: 0 auto; }
-        .btn { flex: 1; height: 44px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.75rem; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-row { display: flex; gap: 5px; width: 100%; max-width: 440px; margin: 0 auto; flex-wrap: wrap; }
+        .btn { flex: 1; min-width: 80px; height: 44px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.75rem; color: #fff; display: flex; align-items: center; justify-content: center; }
         .btn-blue { background: #34495e; }
         .btn-green { background: #27ae60; }
         .btn-orange { background: #d35400; }
+        .btn-gray { background: #7f8c8d; }
 
         #newspaper-wrapper { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; }
-        #capture-area { width: 420px; padding: 25px; color: var(--ink); transform-origin: top center; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+        #capture-area { width: 420px; padding: 25px; color: var(--ink); transform-origin: top center; box-shadow: 0 0 15px rgba(0,0,0,0.05); background-color: var(--paper); }
         
         header { border-top: 4px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; }
         .newspaper-title { font-size: 3.2rem; font-weight: 900; letter-spacing: 8px; margin: 4px 0; }
@@ -50,6 +51,7 @@
             <button class="btn btn-blue" onclick="document.getElementById('upload').click()">🖼️ 換照</button>
             <button class="btn btn-green" id="pub-btn" onclick="uploadNewspaperData()">🚀 刊印</button>
             <button class="btn btn-orange" onclick="copyAppUrl()">🔗 分享</button>
+            <button class="btn btn-gray" onclick="downloadNewspaper()">💾 下載</button>
         </div>
         <input type="file" id="upload" accept="image/*" style="display:none">
     </div>
@@ -109,12 +111,10 @@
         window.onload = () => {
             adjustScale();
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
-            
             if (new URLSearchParams(window.location.search).get('view') === 'reader') {
                 document.body.classList.add('reader-mode');
                 loadPublishedData();
             }
-
             navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
             fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
             .then(r => r.json()).then(d => {
@@ -122,40 +122,29 @@
             });
         };
 
-        // 讀者端：分別拉取圖與文
         async function loadPublishedData() {
             const cacheBust = `?t=${new Date().getTime()}`;
-            // 載入照片
             const img = document.getElementById('final-img');
             img.src = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/main/images/daily.jpg${cacheBust}`;
             img.style.width = "100%"; img.style.height = "100%"; img.style.transform = "translate(-50%, -50%) scale(1)";
-            
-            // 載入文字
             try {
                 const res = await fetch(`https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/main/caption.txt${cacheBust}`);
                 if (res.ok) document.getElementById('out-cap').innerText = await res.text();
             } catch (e) {}
         }
 
-        // 編輯端：分別上傳圖與文
         async function uploadNewspaperData() {
             const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 刊印中...";
+            btn.innerText = "⏳...";
             try {
-                // 1. 合成並上傳照片
                 const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true, scale: 2 });
                 const imgB64 = canvas.toDataURL("image/jpeg", 0.9).split(",")[1];
                 await pushToGithub("images/daily.jpg", imgB64);
-
-                // 2. 上傳文字 (轉為 Base64)
                 const text = document.getElementById('out-cap').innerText;
                 const textB64 = btoa(unescape(encodeURIComponent(text)));
                 await pushToGithub("caption.txt", textB64);
-
-                alert("✅ 圖文同步刊印成功！");
-            } catch (err) {
-                alert("❌ 刊印失敗：" + err.message);
-            }
+                alert("✅ 刊印完成！");
+            } catch (err) { alert("❌ 失敗：" + err.message); }
             btn.innerHTML = "🚀 刊印";
         }
 
@@ -170,23 +159,33 @@
             });
         }
 
+        async function downloadNewspaper() {
+            const area = document.getElementById('capture-area');
+            const canvas = await html2canvas(area, { 
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: '#dbd0bc'
+            });
+            const link = document.createElement('a');
+            link.download = `White6Daily_${new Date().getTime()}.jpg`;
+            link.href = canvas.toDataURL("image/jpeg", 0.95);
+            link.click();
+        }
+
         async function fetchWeather(lat = 25.03, lon = 121.56) {
             try {
                 const wReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
                 const w = await wReq.json();
                 const aReq = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
                 const a = await aReq.json();
-                const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
                 document.getElementById('w-loc').innerText = `📍 ${w.name}`;
                 document.getElementById('w-desc').innerText = w.weather[0].description;
                 document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C / ${w.main.humidity}%`;
+                const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
                 document.getElementById('w-aqi').innerText = aqiMap[a.list[0].main.aqi] || "普通";
-                const cities = [{n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"}];
-                document.getElementById('city-weather-grid').innerHTML = cities.map(c => `<div style="display:flex; justify-content:space-between; font-size:0.75rem; border-bottom:1px dotted #999; padding:2px 0;"><span>${c.n} ${c.s}</span><b>${Math.round(w.main.temp + Math.random()*2-1)}°</b></div>`).join('');
             } catch(e) {}
         }
 
-        // 照片縮放邏輯
         let state = { x: 0, y: 0, s: 1, lastDist: 0 };
         let touches = {};
         const pBox = document.getElementById('p-box'), finalImg = document.getElementById('final-img');
