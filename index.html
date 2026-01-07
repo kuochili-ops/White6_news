@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v12.95 確定上傳版</title>
+    <title>𓃥 白六日報 - v13.0 最終分享強化版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
         :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; }
         body { background: #1a1a1a; margin: 0; font-family: 'Noto Serif TC', serif; color: #fff; display: flex; flex-direction: column; align-items: center; }
         
-        /* 修正後的管理面板 */
-        #admin-panel { background: #222; width: 100%; padding: 10px 0; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .edit-container { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 5px; }
-        .edit-viewport { width: 140px; height: 140px; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; touch-action: none; }
-        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
+        /* 強化分享功能的管理面板 */
+        #admin-panel { background: #222; width: 100%; padding: 12px 0; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
+        .share-banner { background: #333; padding: 8px; margin-bottom: 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid #444; }
         
-        /* 按鈕樣式 */
-        .btn-row { display: flex; gap: 10px; margin-top: 5px; width: 90%; justify-content: center; }
-        .btn { padding: 12px 20px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.9rem; flex: 1; max-width: 150px; }
+        .btn { padding: 12px 18px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.9rem; }
+        .btn-share { background: #f39c12; color: #fff; width: 85%; max-width: 320px; margin-bottom: 10px; box-shadow: 0 4px 0 #d68910; transition: 0.1s; }
+        .btn-share:active { transform: translateY(3px); box-shadow: 0 1px 0 #d68910; }
+        .btn-upload { background: #2980b9; color: #fff; }
         .btn-publish { background: #27ae60; color: #fff; border: 2px solid #fff; }
-        .btn-action { background: #2980b9; color: #fff; }
-        .btn-share { background: #f39c12; color: #fff; }
-        
-        .input-box { width: 80%; max-width: 300px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center; margin: 5px 0; }
 
-        /* 報紙本體 (縮小比例以利預覽) */
+        .edit-viewport { width: 150px; height: 150px; border: 2px solid #fff; position: relative; overflow: hidden; background: #333; touch-action: none; margin: 10px auto; }
+        .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
+        .input-box { width: 80%; max-width: 250px; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center; }
+
+        /* 報紙本體 */
         #newspaper-output { padding: 20px 0; width: 100%; display: flex; justify-content: center; }
         #capture-area { width: 440px; background-color: var(--paper); padding: 25px; background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); color: var(--ink); box-sizing: border-box; }
         header { border-top: 5px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; padding: 5px 0; }
@@ -37,14 +36,15 @@
         .right-col { width: 160px; padding-left: 15px; }
 
         .section-h { font-size: 1.1rem; border-bottom: 2px solid var(--ink); margin: 15px 0 8px 0; padding-bottom: 2px; font-weight: 900; }
-        .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; }
+        .news-item { font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
 
         .weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 2px 0; }
-        .city-chip b { color: var(--accent); }
+        .city-chip { font-size: 0.72rem; display: flex; justify-content: space-between; border-bottom: 1px dotted #999; padding: 2px 0; align-items: center; }
+        .city-chip b { color: var(--accent); min-width: 42px; text-align: right; }
 
         .local-box { border: 1.5px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.2); margin-bottom: 10px; }
         .aqi-tag { padding: 1px 5px; border-radius: 3px; font-weight: bold; color: #fff; font-size: 0.65rem; }
+
         .photo-box { width: 100%; height: 160px; border: 1px solid var(--ink); overflow: hidden; position: relative; background: #e0d8c8; }
         .photo-cap { font-size: 0.75rem; text-align: center; font-weight: bold; margin-top: 4px; border: 1px solid #aaa; padding: 4px; }
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); text-align: center; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 8px 0; margin: 10px 0; }
@@ -55,22 +55,22 @@
 <body>
 
     <div id="admin-panel">
+        <button class="btn btn-share" onclick="copyAppUrl()">🔗 分享此報紙連結 (Copy URL)</button>
+
         <div id="upload-step">
-            <button class="btn btn-action" onclick="document.getElementById('upload').click()">❶ 選擇照片</button>
-            <button class="btn btn-share" onclick="copyUrl()">🔗 分享網址</button>
+            <button class="btn btn-upload" onclick="document.getElementById('upload').click()">❶ 選擇今日照片</button>
             <input type="file" id="upload" accept="image/*" style="display:none">
         </div>
 
         <div id="edit-step" style="display: none;">
-            <div class="edit-container">
-                <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
-                <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%;">
-                <input type="text" id="in-cap" class="input-box" placeholder="點此輸入報名 (如: 大好)" oninput="syncPreview()">
-                
-                <div class="btn-row">
-                    <button class="btn btn-publish" id="pub-btn" onclick="uploadToGithub()">❷ 確定刊印</button>
-                    <button class="btn btn-action" onclick="downloadNewspaper()">下載圖檔</button>
-                </div>
+            <div class="edit-viewport" id="viewport"><img id="raw-img" class="sync-img" src=""></div>
+            <div style="font-size:0.75rem; color:#ccc;">↕ 拖曳照片 / ↔ 滑動縮放</div>
+            <input type="range" id="zoom-ctrl" min="0.1" max="3" step="0.01" value="1" style="width: 80%; margin: 10px 0;">
+            <br>
+            <input type="text" id="in-cap" class="input-box" placeholder="輸入報名 (例: 大好)" oninput="syncPreview()">
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+                <button class="btn btn-publish" onclick="uploadToGithub()" id="pub-btn">❷ 確定刊印</button>
+                <button class="btn btn-upload" onclick="downloadNewspaper()" style="background:#555">下載圖檔</button>
             </div>
         </div>
     </div>
@@ -84,7 +84,7 @@
             <div class="layout-grid">
                 <div class="left-col">
                     <div class="section-h">今日頭條新聞</div>
-                    <div id="news-list">新聞載入中...</div>
+                    <div id="news-list">載入中...</div>
                     <div class="section-h">全台各地天氣</div>
                     <div class="weather-grid" id="city-weather-grid"></div>
                 </div>
@@ -108,11 +108,19 @@
         const GH_CONFIG = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        function copyUrl() {
+        // 分享功能：複製專屬閱讀器連結
+        function copyAppUrl() {
             const url = `https://${GH_CONFIG.owner}.github.io/${GH_CONFIG.repo}/?view=reader`;
-            navigator.clipboard.writeText(url).then(() => alert("✅ 網址已複製！"));
+            const dummy = document.createElement("input");
+            document.body.appendChild(dummy);
+            dummy.value = url;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            alert("✅ 報紙網址已複製到剪貼簿！");
         }
 
+        // 圖片編輯邏輯 (維持穩定拖曳縮放)
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX, startY;
         const viewport = document.getElementById('viewport'), rawImg = document.getElementById('raw-img'), finalImg = document.getElementById('final-img'), zoomCtrl = document.getElementById('zoom-ctrl');
         
@@ -138,7 +146,7 @@
 
         async function uploadToGithub() {
             const btn = document.getElementById('pub-btn');
-            btn.innerText = "⏳ 刊印中...";
+            btn.innerText = "⏳ 發布中...";
             try {
                 const canvas = await html2canvas(document.getElementById('p-box'), { useCORS: true });
                 const base64Data = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
@@ -147,7 +155,7 @@
                 const getRes = await fetch(url);
                 let sha = getRes.ok ? (await getRes.json()).sha : null;
                 const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify({ message: "Update", content: base64Data, sha }) });
-                if (putRes.ok) { alert("✅ 刊印成功！"); btn.innerText = "❷ 確定刊印"; }
+                if (putRes.ok) { alert("✅ 刊印成功！雲端已同步。"); btn.innerText = "❷ 確定刊印"; }
             } catch (e) { alert("刊印失敗"); btn.innerText = "❷ 確定刊印"; }
         }
 
@@ -160,10 +168,12 @@
         }
 
         async function init() {
+            // 新聞
             fetch(`https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=zh-TW%26gl=TW%26ceid=TW:zh-Hant`)
             .then(r => r.json()).then(d => {
                 document.getElementById('news-list').innerHTML = d.items.slice(0, 5).map(i => `<div class="news-item">${i.title.split(' - ')[0]}</div>`).join('');
             });
+            // 氣象
             navigator.geolocation.getCurrentPosition(async p => {
                 const wRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&appid=${API_KEY}&units=metric&lang=zh_tw`);
                 const w = await wRes.json();
