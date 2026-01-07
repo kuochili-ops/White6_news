@@ -3,34 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>白六日報 v16.9</title>
+    <title>白六日報 v17.0</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&display=swap');
-        body { background: #1a1a1a; color: #fff; margin: 0; font-family: sans-serif; text-align: center; }
+        body { background: #000; color: #fff; margin: 0; font-family: sans-serif; text-align: center; }
         
-        /* 移除所有可能干擾點擊的 CSS */
-        #up { 
-            font-size: 20px; 
-            margin: 100px auto; 
-            padding: 20px;
-            display: block;
-            width: 80%;
+        /* 啟動按鈕：巨大且顯眼 */
+        #start-btn {
+            margin-top: 100px; padding: 25px 50px; font-size: 24px; font-weight: bold;
+            background: #f39c12; color: #000; border: none; border-radius: 50px;
+            box-shadow: 0 10px 20px rgba(243,156,18,0.3); cursor: pointer;
         }
 
-        #app-body { display: none; width: 100%; max-width: 500px; margin: 0 auto; padding: 20px; }
-        .ui-panel { background: #333; padding: 20px; border-radius: 15px; border: 1px solid #555; margin-bottom: 20px; }
+        #app-body { display: none; width: 100%; max-width: 500px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+        .ui-panel { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #444; margin-bottom: 20px; }
         .viewport { width: 220px; height: 220px; border: 2px solid #fff; margin: 0 auto 15px; overflow: hidden; position: relative; background: #000; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); pointer-events: none; }
         .ctrl-btn { width: 100%; height: 65px; background: #27ae60; color: #fff; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; margin-top: 15px; }
 
-        /* 報紙內容排版 - 三欄穩定版 */
-        #paper { width: 460px; background: #dbd0bc; color: #2a2825; padding: 25px; box-sizing: border-box; font-family: 'Noto Serif TC', serif; text-align: left; margin: 0 auto; }
+        /* 報紙底稿樣式 */
+        #paper { width: 460px; background: #dbd0bc; color: #2a2825; padding: 25px; box-sizing: border-box; font-family: 'Noto Serif TC', serif; margin: 0 auto; text-align: left; }
         .n-header { border-top: 5px solid #000; border-bottom: 2px solid #000; text-align: center; margin-bottom: 15px; }
         .n-title { font-size: 4rem; font-weight: 900; margin: 5px 0; letter-spacing: 10px; }
         .n-layout { display: flex; gap: 15px; border-bottom: 3px solid #000; padding-bottom: 15px; }
-        
         .side-left { width: 100px; border-right: 1.5px solid #000; font-size: 0.8rem; font-weight: bold; }
-        .city-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #888; }
+        .city-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #888; margin-bottom: 3px; }
         .center-main { flex: 1; text-align: center; }
         .p-frame { width: 220px; height: 220px; border: 1px solid #000; margin: 0 auto; overflow: hidden; position: relative; background: #fff; }
         .side-right { width: 110px; border-left: 1.5px solid #000; padding-left: 10px; text-align: center; }
@@ -39,24 +36,27 @@
 </head>
 <body>
 
-    <h2 id="msg" style="margin-top:50px;">v16.9 安全模式啟動</h2>
-    <p id="sub-msg">如果點擊按鈕沒反應，請嘗試長按重新整理</p>
-    
-    <input type="file" id="up" accept="image/*">
+    <div id="init-view">
+        <h2 style="margin-top:60px;">𓃥 白六日報系統 v17.0</h2>
+        <p>請點擊下方按鈕啟動相簿讀取</p>
+        <button id="start-btn">❶ 開啟今日相片</button>
+        <input type="file" id="up" accept="image/*" style="display:none;">
+    </div>
 
     <div id="app-body">
         <div class="ui-panel">
             <div class="viewport" id="v-frame"><img id="img-e" class="sync-img"></div>
+            <p style="color:#f39c12; font-size:0.9rem;">滑桿縮放，手指可拖動影像位置</p>
             <input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" style="width:100%; height:50px;">
-            <input type="text" id="cap-in" placeholder="輸入照片圖說..." style="width:100%; height:50px; font-size:18px; padding:10px; box-sizing:border-box;">
-            <button class="ctrl-btn" id="pub-btn">確認刊印並上傳</button>
+            <input type="text" id="cap-in" placeholder="在此輸入今日圖說..." style="width:100%; height:50px; font-size:18px; padding:10px; box-sizing:border-box; border-radius:10px; border:none;">
+            <button class="ctrl-btn" id="pub-btn">❷ 刊印並上傳至 GitHub</button>
         </div>
 
         <div id="paper">
             <div class="n-header">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:bold;">
-                    <span>歲次 乙巳年 十一月十九</span>
-                    <span>2026年1月7日</span>
+                    <span>歲次 乙巳年</span>
+                    <span id="p-date">2026年1月7日</span>
                 </div>
                 <h1 class="n-title">白六日報</h1>
             </div>
@@ -66,6 +66,8 @@
                     <div class="city-row"><span>台北</span><span>18°</span></div>
                     <div class="city-row"><span>台中</span><span>20°</span></div>
                     <div class="city-row"><span>高雄</span><span>23°</span></div>
+                    <div class="city-row"><span>宜蘭</span><span>17°</span></div>
+                    <div class="city-row"><span>花蓮</span><span>19°</span></div>
                 </div>
                 <div class="center-main">
                     <div class="p-frame"><img id="img-p" class="sync-img"></div>
@@ -74,10 +76,10 @@
                 </div>
                 <div class="side-right">
                     <div class="n-greet" id="p-greet">午安</div>
-                    <div style="font-size:0.7rem; margin-top:10px;">
-                        <b>[ 本地資訊 ]</b><br>
-                        溫度：18°C<br>
-                        AQI：優
+                    <div style="font-size:0.7rem; margin-top:10px; text-align:left;">
+                        <b>[ 目前資訊 ]</b><br>
+                        環境：穩定<br>
+                        AQI：優良
                     </div>
                 </div>
             </div>
@@ -89,20 +91,20 @@
         const TK = "ghp_CbTbFJpfe9j2u0ER" + "U80NwlkHv5NJVQ23vKXE";
         let scale = 1, posX = 0, posY = 0, isDrag = false, sx, sy;
 
-        // 選檔監聽 - 使用最原始的監聽方式
-        var upInput = document.getElementById('up');
-        upInput.onchange = function(e) {
-            var file = e.target.files[0];
+        // 強制喚醒：點擊 Button -> 觸發 Input
+        document.getElementById('start-btn').onclick = function() {
+            document.getElementById('up').click();
+        };
+
+        document.getElementById('up').onchange = function(e) {
+            const file = e.target.files[0];
             if (!file) return;
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.onload = function(ev) {
                 document.getElementById('img-e').src = document.getElementById('img-p').src = ev.target.result;
-                document.getElementById('up').style.display = 'none';
-                document.getElementById('msg').style.display = 'none';
-                document.getElementById('sub-msg').style.display = 'none';
+                document.getElementById('init-view').style.display = 'none';
                 document.getElementById('app-body').style.display = 'block';
-                
-                var hr = new Date().getHours();
+                const hr = new Date().getHours();
                 document.getElementById('p-greet').innerText = (hr<11)?"早安":(hr<17)?"午安":"晚安";
             };
             reader.readAsDataURL(file);
@@ -134,8 +136,8 @@
                     body: JSON.stringify({ message: "Update", content: b64, sha })
                 });
                 alert("✅ 刊印發布成功！");
-            } catch (e) { alert("發布失敗"); }
-            this.innerText = "確認刊印並上傳";
+            } catch (e) { alert("發布失敗，請檢查網路連接"); }
+            this.innerText = "❷ 刊印並上傳至 GitHub";
         };
     </script>
 </body>
