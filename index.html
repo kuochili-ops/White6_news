@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>𓃥 白六日報 - v9.7 排版修復版</title>
+    <title>𓃥 白六日報 - v9.8 廣告版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
@@ -21,12 +21,11 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* 編輯台控制區 */
+        /* 編輯台控制 */
         #editor-deck {
             position: sticky; top: 0; z-index: 9999;
-            background: rgba(34, 34, 34, 0.95); width: 100%; padding: 10px 0;
-            color: #fff; text-align: center; border-bottom: 1px solid #333;
-            backdrop-filter: blur(5px);
+            background: rgba(34, 34, 34, 0.9); width: 100%; padding: 8px 0;
+            color: #fff; text-align: center; backdrop-filter: blur(5px);
         }
 
         .edit-viewport {
@@ -35,7 +34,7 @@
             overflow: hidden; background: #000; touch-action: none;
         }
 
-        .sync-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; display: block; }
+        .sync-img { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
 
         .btn {
             background: var(--accent); color: #fff;
@@ -43,15 +42,15 @@
             font-weight: bold; margin: 5px; border-radius: 3px;
         }
 
-        /* 報紙內容主體 */
+        /* 報紙內容區 */
         #newspaper-output {
-            display: none; padding: 25px 0; width: 100%; justify-content: center;
+            display: none; padding: 20px 0; width: 100%; justify-content: center;
         }
 
         #capture-area {
-            width: 350px;
+            width: 360px;
             background-color: var(--paper);
-            padding: 22px;
+            padding: 20px;
             background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
             color: var(--ink);
         }
@@ -59,67 +58,78 @@
         header {
             border-top: 4px solid var(--ink);
             border-bottom: 1px solid var(--ink);
-            margin-bottom: 15px; padding: 10px 0 5px 0;
-            text-align: center;
+            margin-bottom: 15px; padding: 8px 0;
         }
 
         .newspaper-title {
-            font-size: 2.6rem; font-weight: 900; letter-spacing: 10px;
-            margin: 5px 0; line-height: 1;
+            font-size: 2.6rem; font-weight: 900; letter-spacing: 12px;
+            margin: 2px 0; text-align: center; line-height: 1.2;
         }
 
-        /* 內容網格：確保照片和文字各就各位 */
-        .content-grid { 
-            display: flex; 
-            gap: 15px; 
-            align-items: flex-start;
-        }
-
-        /* 直排總容器：這是修復重疊的關鍵 */
-        .vertical-text-container {
-            writing-mode: vertical-rl; /* 從右至左直排 */
+        /* 核心版面管理 */
+        .main-layout {
             display: flex;
-            gap: 15px; /* 區塊與區塊間的橫向推開距離 */
-            flex-grow: 1;
+            flex-direction: row-reverse; /* 從右往左排列欄位 */
+            gap: 12px;
+            min-height: 400px;
         }
 
-        /* 標題區塊 */
-        .headline-section {
-            font-size: 1.85rem; font-weight: 900; color: var(--accent);
-            line-height: 1.1;
-            margin-left: 10px; /* 強制與左側內文推開 */
+        /* 右側：照片與天氣 */
+        .right-col {
+            width: 135px; flex-shrink: 0;
+            display: flex; flex-direction: column;
         }
 
-        /* 靜思語區塊 */
-        .quote-section {
-            font-size: 1.15rem; font-weight: 700;
-            line-height: 1.4;
-            color: #333;
-        }
-
-        /* 內文快訊區塊 */
-        .news-section {
-            font-size: 0.78rem; color: #444; 
-            line-height: 2.5; /* 大幅增加列距，讓文字不再打結 */
-            text-align: justify;
-        }
-
-        /* 照片與天氣側欄 */
-        .photo-sidebar { width: 135px; flex-shrink: 0; }
         .photo-frame {
-            width: 135px; height: 175px;
-            border: 1px solid var(--ink);
+            width: 135px; height: 175px; border: 1px solid var(--ink);
             overflow: hidden; position: relative;
-            filter: sepia(0.2) contrast(1.1) saturate(0.9);
+            filter: sepia(0.2) contrast(1.1);
         }
 
         .weather-box {
-            margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);
-            padding-top: 8px; font-size: 0.65rem; line-height: 1.5;
+            margin-top: 10px; border: 1px solid rgba(0,0,0,0.1);
+            padding: 6px; font-size: 0.65rem; line-height: 1.4;
+            background: rgba(255,255,255,0.3);
         }
 
-        #result-preview { display: none; text-align: center; padding: 20px 10px; }
-        #result-preview img { width: 100%; max-width: 350px; border: 8px solid #fff; }
+        /* 中間與左側：直排文字區 */
+        .text-area-vertical {
+            writing-mode: vertical-rl;
+            display: flex;
+            flex-direction: row; /* 在直排模式下，這會讓子元素從右向左推 */
+            flex-grow: 1;
+            gap: 15px;
+        }
+
+        .headline-morning {
+            font-size: 1.8rem; font-weight: 900; color: var(--accent);
+            line-height: 1.1; margin-left: 5px;
+        }
+
+        .quote-box {
+            font-size: 1.1rem; font-weight: 700; line-height: 1.4;
+            border-left: 1px dotted rgba(0,0,0,0.2); padding-left: 8px;
+        }
+
+        .news-box {
+            font-size: 0.75rem; line-height: 2.1; flex-grow: 1;
+            text-align: justify; color: #444;
+        }
+
+        /* 下方廣告欄位 */
+        .ad-row {
+            margin-top: 15px;
+            border: 2px solid var(--ink);
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .ad-title { font-size: 1rem; letter-spacing: 4px; color: var(--accent); }
+        .ad-contact { font-size: 0.7rem; color: #333; margin-top: 3px; }
+
+        #result-preview { display: none; text-align: center; padding: 20px; }
+        #result-preview img { width: 100%; max-width: 360px; border: 8px solid #fff; }
     </style>
 </head>
 <body>
@@ -141,40 +151,45 @@
     <div id="newspaper-output">
         <div id="capture-area">
             <header>
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem;">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; font-weight:bold;">
                     <span>歲次 乙巳年 十一月十九</span>
                     <span>二〇二六年一月七日</span>
                 </div>
                 <h1 class="newspaper-title">𓃥 白六日報</h1>
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; border-top:1px solid var(--ink); padding:4px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; border-top:1px solid var(--ink); padding:4px 0; font-weight:bold;">
                     <span>零售 肆圓</span>
                     <span>今日號外</span>
                     <span>北投特刊</span>
                 </div>
             </header>
 
-            <div class="content-grid">
-                <div class="vertical-text-container">
-                    <div class="headline-section">早安平安</div>
-                    <div class="quote-section" id="display-quote"></div>
-                    <div class="news-section">
-                        【本報快訊】強烈冷氣團發威，全台橙色低溫特報。北投清晨最低溫僅 8.9 度。
-                        國防部搜尋失聯機件任務持續。台股氣勢如虹，科技股領軍。
-                    </div>
-                </div>
-
-                <aside class="photo-sidebar">
+            <div class="main-layout">
+                <aside class="right-col">
                     <div class="photo-frame">
                         <img id="final-img" class="sync-img" src="">
                     </div>
                     <div class="weather-box">
-                        <strong>【各縣市氣象】</strong><br>
+                        <strong>【各縣市天氣預報】</strong><br>
                         台北 9° | 台中 11° | 高雄 14°<br>
                         宜蘭 10° | 花蓮 14° | 澎湖 15°
                     </div>
                 </aside>
+
+                <div class="text-area-vertical">
+                    <div class="headline-morning">早安平安</div>
+                    <div class="quote-box" id="display-quote"></div>
+                    <div class="news-box">
+                        【氣象即時新聞】強烈冷氣團發威，氣象局發布低溫橙色特報。北投清晨最低溫僅 8.9 度。集氣祈福花蓮搜救任務。台股今日氣勢如虹，AI 類股領漲。線上即時新聞持續關注全球局勢變化。
+                    </div>
+                </div>
             </div>
-            <footer style="margin-top:15px; text-align:center; font-size:0.55rem; border-top:1px solid rgba(0,0,0,0.1); padding-top:8px; opacity:0.6;">
+
+            <div class="ad-row">
+                <div class="ad-title">廣告招租 ‧ 效果宏大</div>
+                <div class="ad-contact">意者請洽：chilikuo@gmail.com</div>
+            </div>
+
+            <footer style="margin-top:15px; text-align:center; font-size:0.5rem; opacity:0.6; border-top:1px solid rgba(0,0,0,0.1); padding-top:8px;">
                 𓃥 白六日報館 · 證嚴法師靜思語選錄
             </footer>
         </div>
