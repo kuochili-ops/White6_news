@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>白六日報 v16.3</title>
+    <title>白六日報 v16.4</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&display=swap');
-        body { background: #1a1a1a; color: #fff; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        body { background: #1a1a1a; color: #fff; margin: 0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        /* 檔案上傳區：完全移除裝飾，確保功能第一 */
-        #upload-area { width: 90%; background: #333; padding: 30px 15px; border-radius: 15px; border: 2px dashed #f39c12; text-align: center; margin-bottom: 20px; }
-        #up { width: 100%; font-size: 1.1rem; color: #fff; padding: 10px 0; }
+        /* 檔案上傳：最原始、最穩定 */
+        #upload-container { width: 100%; max-width: 400px; padding: 30px 0; text-align: center; border: 3px dashed #f39c12; margin-top: 50px; border-radius: 20px; }
+        #up { font-size: 1.2rem; margin-top: 20px; }
 
         #app-body { display: none; width: 100%; max-width: 500px; }
-        
-        /* 編輯面板 */
-        .ui-panel { background: #222; padding: 20px; border-radius: 15px; margin: 10px; border: 1px solid #444; }
+        .ui-panel { background: #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #555; }
         .viewport { width: 220px; height: 220px; border: 2px solid #fff; margin: 0 auto 15px; overflow: hidden; position: relative; background: #000; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); pointer-events: none; }
-        .ctrl-btn { width: 100%; height: 60px; background: #27ae60; color: #fff; border: none; border-radius: 10px; font-size: 1.25rem; font-weight: bold; margin-top: 15px; }
+        .ctrl-btn { width: 100%; height: 65px; background: #27ae60; color: #fff; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; margin-top: 15px; }
 
         /* --- 報紙底稿 --- */
         #paper { width: 500px; background: #dbd0bc; color: #2a2825; padding: 30px; box-sizing: border-box; font-family: 'Noto Serif TC', serif; }
@@ -26,22 +24,22 @@
         .n-title { font-size: 4.5rem; font-weight: 900; margin: 5px 0; letter-spacing: 15px; }
         .n-layout { display: flex; gap: 20px; border-bottom: 3px solid #000; padding-bottom: 20px; }
         
-        .side-left { width: 105px; border-right: 1.5px solid #000; font-size: 0.8rem; font-weight: bold; }
+        .side-left { width: 110px; border-right: 1.5px solid #000; font-size: 0.85rem; font-weight: bold; line-height: 1.6; }
         .city-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #888; }
         .center-main { flex: 1; text-align: center; }
         .p-frame { width: 240px; height: 240px; border: 1px solid #000; margin: 0 auto; overflow: hidden; position: relative; background: #fff; }
-        .side-right { width: 110px; border-left: 1.5px solid #000; padding-left: 15px; text-align: center; }
-        .n-greet { font-size: 2.2rem; font-weight: 900; writing-mode: vertical-rl; margin: 10px auto; color: #7a0000; }
-        .n-info { font-size: 0.75rem; text-align: left; line-height: 1.5; }
+        .side-right { width: 115px; border-left: 1.5px solid #000; padding-left: 15px; text-align: center; }
+        .n-greet { font-size: 2.2rem; font-weight: 900; writing-mode: vertical-rl; margin: 10px auto; color: #7a0000; letter-spacing: 5px; }
+        .n-info { font-size: 0.75rem; text-align: left; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 5px; }
 
-        body.share-mode #upload-area, body.share-mode .ui-panel { display: none !important; }
+        body.share-mode #upload-container, body.share-mode .ui-panel { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="upload-area">
-        <h2 style="color:#f39c12; margin-top:0;">𓃥 白六日報編輯系統</h2>
-        <p style="margin-bottom:15px;">❶ 請先選取今日照片啟動報紙：</p>
+    <div id="upload-container">
+        <h2 style="color:#f39c12; margin:0;">𓃥 白六日報編輯系統</h2>
+        <p>請點擊下方「選擇檔案」開啟照片</p>
         <input type="file" id="up" accept="image/*">
     </div>
 
@@ -49,14 +47,14 @@
         <div class="ui-panel">
             <div class="viewport" id="v-frame"><img id="img-e" class="sync-img"></div>
             <input type="range" id="zoom" min="0.05" max="3" step="0.01" value="1" style="width:100%; height:50px;">
-            <input type="text" id="cap-in" placeholder="輸入照片圖說..." style="width:100%; height:45px; font-size:18px; padding:10px; box-sizing:border-box;">
-            <button class="ctrl-btn" id="pub-btn">❷ 確定刊印發布</button>
+            <input type="text" id="cap-in" placeholder="在此輸入今日圖說..." style="width:100%; height:50px; font-size:18px; padding:10px; box-sizing:border-box;">
+            <button class="ctrl-btn" id="pub-btn">確定刊印發布</button>
         </div>
 
         <div id="paper">
             <div class="n-header">
                 <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold;">
-                    <span>歲次 乙巳年</span>
+                    <span>歲次 乙巳年 十一月十九</span>
                     <span id="p-date"></span>
                 </div>
                 <h1 class="n-title">白六日報</h1>
@@ -64,26 +62,28 @@
 
             <div class="n-layout">
                 <div class="side-left" id="all-tw">
-                    <div style="text-align:center; border-bottom:2px solid #000; margin-bottom:8px;">全台天候</div>
+                    <div style="text-align:center; border-bottom:2px solid #000; margin-bottom:8px;">全台概況</div>
                 </div>
 
                 <div class="center-main">
                     <div class="p-frame"><img id="img-p" class="sync-img"></div>
                     <div id="p-cap" style="font-size:0.85rem; font-weight:bold; margin:10px 0;">今日影像紀錄</div>
-                    <div id="daily-q" style="font-size:1.1rem; font-weight:900; color:#7a0000; border:2px solid #7a0000; padding:8px; margin-top:10px;">嘉言載入中...</div>
+                    <div id="daily-q" style="font-size:1.1rem; font-weight:900; color:#7a0000; border:2px solid #7a0000; padding:10px; margin-top:10px;">嘉言載入中...</div>
                 </div>
 
                 <div class="side-right">
                     <div class="n-greet" id="p-greet">午安</div>
                     <div class="n-info">
-                        <b>[ 本地資訊 ]</b><br>
+                        <b>[ 目前定位 ]</b><br>
                         溫度：<span id="l-temp">--</span><br>
                         濕度：<span id="l-hum">--</span><br>
                         AQI：<span style="color:green; font-weight:bold;">優良</span>
                     </div>
                 </div>
             </div>
-            <div style="font-size:0.7rem; margin-top:15px; text-align:center; opacity:0.6;">White6 Daily | 2026 版</div>
+            <div style="font-size:0.7rem; margin-top:20px; text-align:center; opacity:0.6; letter-spacing:1px;">
+                © 2026 White6 Daily News | 僅供內部交流使用
+            </div>
         </div>
     </div>
 
@@ -92,27 +92,27 @@
         const TK = "ghp_CbTbFJpfe9j2u0ER" + "U80NwlkHv5NJVQ23vKXE";
         let scale = 1, posX = 0, posY = 0, isDrag = false, sx, sy;
 
-        // 監聽檔案上傳 (直接綁定確保響應)
-        document.getElementById('up').addEventListener('change', function(e) {
+        // 選檔邏輯
+        document.getElementById('up').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 document.getElementById('img-e').src = document.getElementById('img-p').src = ev.target.result;
-                document.getElementById('upload-area').style.display = 'none';
+                document.getElementById('upload-container').style.display = 'none';
                 document.getElementById('app-body').style.display = 'block';
-                loadData();
+                loadPaperData();
             };
             reader.readAsDataURL(file);
-        });
+        };
 
-        function loadData() {
+        function loadPaperData() {
             const now = new Date();
             const hr = now.getHours();
             document.getElementById('p-greet').innerText = (hr<11)?"早安":(hr<17)?"午安":"晚安";
             document.getElementById('p-date').innerText = now.toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric'});
 
-            const qs = ["心若陽光，無懼風雨。","白六精神，自在人生。","越簡單，越不凡。","平凡日子裡的萬丈光芒。"];
+            const qs = ["心若陽光，無懼風雨。","白六精神，自在人生。","越簡單，越不凡。","平凡日子裡的萬丈光芒。","今日事，今日畢。"];
             document.getElementById('daily-q').innerText = qs[Math.floor(Math.random()*qs.length)];
 
             const cities = [["台北","18°"],["台中","20°"],["台南","22°"],["高雄","23°"],["宜蘭","17°"],["花蓮","19°"]];
@@ -122,9 +122,10 @@
                 const d = t.split('|');
                 document.getElementById('l-temp').innerText = d[0];
                 document.getElementById('l-hum').innerText = d[1];
-            }).catch(()=> { document.getElementById('l-temp').innerText = "18°C"; });
+            }).catch(() => { document.getElementById('l-temp').innerText = "18°C"; });
         }
 
+        // 交互邏輯
         const update = () => {
             const t = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
             document.getElementById('img-e').style.transform = document.getElementById('img-p').style.transform = t;
@@ -137,8 +138,9 @@
         window.ontouchmove = (e) => { if(!isDrag) return; posX = e.touches[0].clientX - sx; posY = e.touches[0].clientY - sy; update(); };
         window.ontouchend = () => isDrag = false;
 
+        // 發布邏輯
         document.getElementById('pub-btn').onclick = async function() {
-            this.innerText = "⏳ 發布中...";
+            this.innerText = "⏳ 正在刊印並上傳...";
             try {
                 const canvas = await html2canvas(document.getElementById('paper'), { useCORS: true, scale: 2 });
                 const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
@@ -150,9 +152,9 @@
                     headers: { "Authorization": `token ${TK}`, "Content-Type": "application/json" },
                     body: JSON.stringify({ message: "Update", content: b64, sha })
                 });
-                alert("✅ 刊印發布成功！\n可分享 URL 或長按報紙儲存。");
-            } catch (e) { alert("發布失敗，請檢查網路"); }
-            this.innerText = "❷ 確定刊印發布";
+                alert("✅ 刊印成功！\n您可以將網址傳給朋友（附帶 ?share=1 隱藏按鈕）。");
+            } catch (e) { alert("上傳失敗，請稍後再試"); }
+            this.innerText = "確定刊印發布";
         };
     </script>
 </body>
