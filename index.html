@@ -3,40 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>𓃥 白六日報 - v18.5</title>
+    <title>𓃥 白六日報 - v19.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
+        :root { --paper: #dbd0bc; --ink: #2a2825; --accent: #7a0000; --red: #a80000; }
         
-        :root { 
-            --paper: #dbd0bc; 
-            --ink: #2a2825; 
-            --accent: #7a0000; 
-        }
-
-        /* 關鍵修正：html 與 body 直接承載紙張色，徹底消滅黑底 */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-            background-color: var(--paper);
-            background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
-            font-family: 'Noto Serif TC', serif;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* 控制台保持深色對比 */
-        #admin-panel { 
-            background: rgba(30, 30, 30, 0.98); 
-            width: 100%; padding: 12px; 
-            border-bottom: 3px solid var(--accent); 
-            position: sticky; top: 0; z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-
+        html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; background-color: var(--paper); background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); font-family: 'Noto Serif TC', serif; display: flex; flex-direction: column; overflow-x: hidden; }
+        
+        #admin-panel { background: rgba(30, 30, 30, 0.98); width: 100%; padding: 12px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
         .input-box { width: 100%; max-width: 400px; height: 40px; background: #333; border: 1px solid #555; color: #fff; border-radius: 6px; padding: 0 10px; font-size: 16px; text-align: center; margin-bottom: 10px; display: block; margin: 0 auto; }
         .btn-row { display: flex; gap: 5px; width: 100%; max-width: 440px; margin: 0 auto; }
         .btn { flex: 1; height: 44px; border: none; cursor: pointer; font-weight: 900; border-radius: 6px; font-size: 0.75rem; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -45,23 +20,8 @@
         .btn-orange { background: #d35400; }
         .btn-gray { background: #7f8c8d; }
 
-        /* 報紙縮放容器 */
-        #newspaper-wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px 0;
-        }
-
-        #capture-area { 
-            width: 420px; 
-            padding: 25px; 
-            color: var(--ink); 
-            transform-origin: top center;
-            /* 編輯模式下的邊界感 */
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-        }
+        #newspaper-wrapper { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; }
+        #capture-area { width: 420px; padding: 25px; color: var(--ink); transform-origin: top center; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
         
         header { border-top: 4px solid var(--ink); border-bottom: 2px solid var(--ink); margin-bottom: 15px; text-align: center; }
         .newspaper-title { font-size: 3.2rem; font-weight: 900; letter-spacing: 8px; margin: 4px 0; }
@@ -72,27 +32,25 @@
         
         .quote-box { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin: 12px 0; padding: 12px; border: 1px dashed var(--ink); background: rgba(255,255,255,0.1); line-height: 1.6; }
 
-        .photo-box { 
-            width: 140px; height: 140px; border: 1.2px solid var(--ink); 
-            overflow: hidden; position: relative; background: #c9bfab; 
-            margin: 0 auto; touch-action: none;
-        }
+        .photo-box { width: 140px; height: 140px; border: 1.2px solid var(--ink); overflow: hidden; position: relative; background: #c9bfab; margin: 0 auto; touch-action: none; }
         .sync-img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
 
         .news-item { font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px; border-left: 3px solid var(--accent); padding-left: 8px; font-weight: 700; text-align: justify; }
         .greet { font-size: 1.6rem; font-weight: 900; color: var(--accent); border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); padding: 8px 0; margin: 15px 0; }
-        .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); font-size: 0.8rem; text-align: left; margin-bottom: 12px; }
+        .weather-info { border: 1.2px solid var(--ink); padding: 8px; background: rgba(255,255,255,0.1); font-size: 0.75rem; text-align: left; margin-bottom: 12px; line-height: 1.6; }
         
-        .page-end { margin-top: 30px; font-size: 0.7rem; font-weight: bold; letter-spacing: 2px; opacity: 0.4; }
+        /* 方形紅色外框廣告 */
+        .ad-box { margin-top: 25px; border: 2px solid var(--red); padding: 6px; color: var(--red); font-weight: 900; font-size: 0.75rem; position: relative; display: inline-block; width: 100%; }
+        .ad-box::before { content: "廣告刊登"; display: block; border-bottom: 1px solid var(--red); margin-bottom: 4px; font-size: 0.85rem; }
+        .ad-box span { letter-spacing: 2px; }
 
         body.reader-mode #admin-panel { display: none; }
-        body.reader-mode #capture-area { box-shadow: none; }
     </style>
 </head>
 <body>
 
     <div id="admin-panel">
-        <input type="text" id="in-cap" class="input-box" placeholder="輸入今日照片敘述..." oninput="syncPreview()">
+        <input type="text" id="in-cap" class="input-box" placeholder="寫點什麼作為圖說..." oninput="syncPreview()">
         <div class="btn-row">
             <button class="btn btn-blue" onclick="document.getElementById('upload').click()">🖼️ 換照</button>
             <button class="btn btn-green" id="pub-btn" onclick="uploadToGithub()">🚀 刊印</button>
@@ -124,7 +82,8 @@
                     <div class="weather-info">
                         <div id="w-loc" style="font-weight:900; border-bottom:1.5px solid var(--ink); margin-bottom:5px; text-align:center;">📍 定位中</div>
                         <div style="display:flex; justify-content:space-between;"><span>天候</span><b id="w-desc">--</b></div>
-                        <div style="display:flex; justify-content:space-between;"><span>氣溫</span><b id="w-temp">--</b></div>
+                        <div style="display:flex; justify-content:space-between;"><span>溫濕</span><b id="w-temp">-- / --</b></div>
+                        <div style="display:flex; justify-content:space-between;"><span>空品</span><b id="w-aqi">--</b></div>
                     </div>
                     
                     <div class="quote-box" id="daily-quote">...</div>
@@ -133,7 +92,10 @@
                     <div id="out-cap" style="font-size:0.75rem; text-align:center; font-weight:bold; margin-top:8px; border:1px solid #999; padding:5px;">今日影像紀錄</div>
                     
                     <div class="greet" id="dynamic-greet">舒心·平安</div>
-                    <div class="page-end">◆ 白六通訊社 ◆</div>
+                    
+                    <div class="ad-box">
+                        <span>◆ 效果宏大 ◆</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -144,17 +106,23 @@
         const GH = { owner: "kuochili-ops", repo: "White6_news", path: "images/daily.jpg" };
         const API_KEY = "Dacfd5f7b7e6c05162ac1340b88b6cc0";
 
-        // 優化的自適應縮放
         function adjustScale() {
             const paper = document.getElementById('capture-area');
             const winW = window.innerWidth;
             const paperW = 420;
-            if (winW < paperW) {
-                const scale = winW / paperW;
-                paper.style.transform = `scale(${scale})`;
-            } else {
-                paper.style.transform = "none";
-            }
+            paper.style.transform = (winW < paperW) ? `scale(${winW / paperW})` : "none";
+        }
+
+        // 智能問候邏輯
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let msg = "舒心·平安";
+            if (hour >= 5 && hour < 11) msg = "早安·晨曦";
+            else if (hour >= 11 && hour < 14) msg = "午安·閑適";
+            else if (hour >= 14 && hour < 18) msg = "申安·寧靜";
+            else if (hour >= 18 && hour < 22) msg = "晚安·溫馨";
+            else msg = "深夜·好夢";
+            document.getElementById('dynamic-greet').innerText = msg;
         }
 
         const quotes = [
@@ -166,12 +134,11 @@
 
         window.onload = () => {
             adjustScale();
+            updateGreeting();
             document.getElementById('daily-quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
             document.getElementById('solar-date').innerText = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
             
-            if (new URLSearchParams(window.location.search).get('view') === 'reader') {
-                document.body.classList.add('reader-mode');
-            }
+            if (new URLSearchParams(window.location.search).get('view') === 'reader') document.body.classList.add('reader-mode');
 
             navigator.geolocation.getCurrentPosition(p => fetchWeather(p.coords.latitude, p.coords.longitude), () => fetchWeather());
             
@@ -183,11 +150,20 @@
 
         async function fetchWeather(lat = 25.03, lon = 121.56) {
             try {
-                const g = await (await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`)).json();
-                document.getElementById('w-loc').innerText = `📍 ${g[0]?.local_names?.zh || "台北"}`;
-                const w = await (await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`)).json();
+                // 1. 基本天氣與濕度
+                const wReq = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=zh_tw`);
+                const w = await wReq.json();
+                
+                // 2. 空氣品質 (AQI)
+                const aReq = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+                const a = await aReq.json();
+                const aqiMap = ["-", "優", "良", "普通", "差", "極差"];
+
+                document.getElementById('w-loc').innerText = `📍 ${w.name}`;
                 document.getElementById('w-desc').innerText = w.weather[0].description;
-                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C`;
+                document.getElementById('w-temp').innerText = `${Math.round(w.main.temp)}°C / ${w.main.humidity}%`;
+                document.getElementById('w-aqi').innerText = aqiMap[a.list[0].main.aqi] || "普通";
+
                 const cities = [{n:"台北", s:"☀️"}, {n:"台中", s:"⛅"}, {n:"高雄", s:"☀️"}, {n:"宜蘭", s:"🌧️"}, {n:"花蓮", s:"⛅"}, {n:"桃園", s:"☀️"}];
                 document.getElementById('city-weather-grid').innerHTML = cities.map(c => `<div style="display:flex; justify-content:space-between; font-size:0.75rem; border-bottom:1px dotted #999; padding:2px 0;"><span>${c.n} ${c.s}</span><b>${Math.round(w.main.temp + Math.random()*2-1)}°</b></div>`).join('');
             } catch(e) {}
